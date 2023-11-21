@@ -6,7 +6,7 @@ class Thread {
     this.group_id = group_id;
     this.content_id = content_id;
   }
-    
+
   async save() {
     try {
       const [rows] = await db.query(
@@ -39,7 +39,9 @@ class Thread {
 
   static async getByGroupId(group_id) {
     try {
-      const [rows] = await db.query("SELECT * FROM Thread WHERE group_id = ?", [group_id]);
+      const [rows] = await db.query("SELECT * FROM Thread WHERE group_id = ?", [
+        group_id,
+      ]);
       return rows;
     } catch (err) {
       console.log(err);
@@ -50,11 +52,7 @@ class Thread {
     try {
       const [rows] = await db.query(
         "UPDATE Thread SET group_id = ?, content_id = ? WHERE id = ?",
-        [
-          this.group_id,
-          this.content_id,
-          this.id,
-        ],
+        [this.group_id, this.content_id, this.id],
       );
       return rows;
     } catch (err) {
@@ -73,5 +71,5 @@ class Thread {
     }
   }
 }
-  
+
 module.exports = Thread;

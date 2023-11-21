@@ -12,7 +12,7 @@ class User {
 
   async save() {
     try {
-      const [rows] = await db.execute(
+      const result = await db.execute(
         "INSERT INTO Registered_user (username, picture_path, password, role, visibility) VALUES (?, ?, ?, ?, ?)",
         [
           this.username,
@@ -22,7 +22,8 @@ class User {
           this.visibility,
         ],
       );
-      return rows;
+      this.id = result[0].insertId;
+      return this.id;
     } catch (err) {
       console.log(err);
     }
@@ -40,7 +41,6 @@ class User {
     }
   }
 
-
   static async getAll() {
     try {
       const [rows] = await db.execute("SELECT * FROM Registered_user");
@@ -52,7 +52,10 @@ class User {
 
   static async getById(id) {
     try {
-      const [rows] = await db.execute("SELECT * FROM Registered_user WHERE id = ?", [id]);
+      const [rows] = await db.execute(
+        "SELECT * FROM Registered_user WHERE id = ?",
+        [id],
+      );
       return rows[0];
     } catch (err) {
       console.log(err);
@@ -80,9 +83,10 @@ class User {
 
   async delete() {
     try {
-      const [rows] = await db.execute("DELETE FROM Registered_user WHERE id = ?", [
-        this.id,
-      ]);
+      const [rows] = await db.execute(
+        "DELETE FROM Registered_user WHERE id = ?",
+        [this.id],
+      );
       return rows;
     } catch (err) {
       console.log(err);
