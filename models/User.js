@@ -13,7 +13,7 @@ class User {
   async save() {
     try {
       const [rows] = await db.execute(
-        "INSERT INTO users (username, picture_path, password, role, visibility) VALUES (?, ?, ?, ?, ?)",
+        "INSERT INTO Registered_user (username, picture_path, password, role, visibility) VALUES (?, ?, ?, ?, ?)",
         [
           this.username,
           this.picture_path,
@@ -28,9 +28,22 @@ class User {
     }
   }
 
+  static async getByUsername(username) {
+    try {
+      const [rows] = await db.execute(
+        "SELECT * FROM Registered_user WHERE username = ?",
+        [username],
+      );
+      return rows[0];
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+
   static async getAll() {
     try {
-      const [rows] = await db.execute("SELECT * FROM users");
+      const [rows] = await db.execute("SELECT * FROM Registered_user");
       return rows;
     } catch (err) {
       console.log(err);
@@ -39,7 +52,7 @@ class User {
 
   static async getById(id) {
     try {
-      const [rows] = await db.execute("SELECT * FROM users WHERE id = ?", [id]);
+      const [rows] = await db.execute("SELECT * FROM Registered_user WHERE id = ?", [id]);
       return rows[0];
     } catch (err) {
       console.log(err);
@@ -49,7 +62,7 @@ class User {
   async update() {
     try {
       const [rows] = await db.execute(
-        "UPDATE users SET username = ?, picture_path = ?, password = ?, role = ?, visibility = ? WHERE id = ?",
+        "UPDATE Registered_user SET username = ?, picture_path = ?, password = ?, role = ?, visibility = ? WHERE id = ?",
         [
           this.username,
           this.picture_path,
@@ -67,7 +80,7 @@ class User {
 
   async delete() {
     try {
-      const [rows] = await db.execute("DELETE FROM users WHERE id = ?", [
+      const [rows] = await db.execute("DELETE FROM Registered_user WHERE id = ?", [
         this.id,
       ]);
       return rows;
