@@ -10,7 +10,7 @@ class Group {
   async save() {
     try {
       const [rows] = await db.query(
-        "INSERT INTO groups (name, description, picture_path, visibility) VALUES (?, ?, ?, ?)",
+        "INSERT INTO `Group` (name, description, picture_path, visibility) VALUES (?, ?, ?, ?)",
         [this.name, this.description, this.picture_path, this.visibility],
       );
       return rows;
@@ -21,7 +21,19 @@ class Group {
 
   static async getAll() {
     try {
-      const [rows] = await db.query("SELECT * FROM groups");
+      const [rows] = await db.query("SELECT * FROM `Group`");
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  static async getByName(name) {
+    try {
+      const [rows] = await db.query("SELECT * FROM `Group` WHERE name = ?", 
+      [
+        name,
+      ]);
       return rows;
     } catch (err) {
       console.log(err);
@@ -30,7 +42,7 @@ class Group {
 
   static async getById(id) {
     try {
-      const [rows] = await db.query("SELECT * FROM groups WHERE id = ?", [id]);
+      const [rows] = await db.query("SELECT * FROM `Group` WHERE id = ?", [id]);
       return rows;
     } catch (err) {
       console.log(err);
@@ -40,7 +52,7 @@ class Group {
   async update() {
     try {
       const [rows] = await db.query(
-        "UPDATE groups SET name = ?, description = ?, picture_path = ?, visibility = ? WHERE id = ?",
+        "UPDATE `Group` SET name = ?, description = ?, picture_path = ?, visibility = ? WHERE id = ?",
         [
           this.name,
           this.description,
@@ -57,7 +69,7 @@ class Group {
 
   async delete() {
     try {
-      const [rows] = await db.query("DELETE FROM groups WHERE id = ?", [
+      const [rows] = await db.query("DELETE FROM `Group` WHERE id = ?", [
         this.id,
       ]);
       return rows;
@@ -67,4 +79,4 @@ class Group {
   }
 }
 
-module.exports = Group;
+module.exports = Group; 
