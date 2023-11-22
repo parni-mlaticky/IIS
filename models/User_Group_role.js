@@ -12,11 +12,19 @@ class User_Group_role {
     try {
       const [rows] = await db.execute(
         "INSERT INTO User_Group_role (user_id, group_id, role) VALUES (?, ?, ?)",
-        [
-          this.user_id,
-          this.group_id,
-          this.role
-        ],
+        [this.user_id, this.group_id, this.role],
+      );
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  static async getByUserId(user_id) {
+    try {
+      const [rows] = await db.execute(
+        "SELECT * FROM User_Group_role WHERE user_id = ?",
+        [user_id],
       );
       return rows;
     } catch (err) {
@@ -35,7 +43,10 @@ class User_Group_role {
 
   static async getById(id) {
     try {
-      const [rows] = await db.execute("SELECT * FROM User_Group_role WHERE id = ?", [id]);
+      const [rows] = await db.execute(
+        "SELECT * FROM User_Group_role WHERE id = ?",
+        [id],
+      );
       return rows[0];
     } catch (err) {
       console.log(err);
@@ -46,12 +57,7 @@ class User_Group_role {
     try {
       const [rows] = await db.execute(
         "UPDATE User_Group_role SET user_id = ?, groupd_id = ?, role = ?, WHERE id = ?",
-        [
-          this.user_id,
-          this.group_id,
-          this.role,
-          this.id
-        ],
+        [this.user_id, this.group_id, this.role, this.id],
       );
       return rows;
     } catch (err) {
@@ -61,9 +67,10 @@ class User_Group_role {
 
   async delete() {
     try {
-      const [rows] = await db.execute("DELETE FROM User_Group_role WHERE id = ?", [
-        this.id,
-      ]);
+      const [rows] = await db.execute(
+        "DELETE FROM User_Group_role WHERE id = ?",
+        [this.id],
+      );
       return rows;
     } catch (err) {
       console.log(err);
