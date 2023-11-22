@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
@@ -8,23 +8,26 @@
 <body>
     <h1>Edit Profile</h1>
 
-    <form action="/profile/update" method="post">
+    <form action="/profile/update" method="post" enctype="multipart/form-data" id="form">
 
     <input type="hidden" name="_method" value="PUT"> 
         
         <div>
-            <label for="username">Username:</label>
+            <label for="username">Change username:</label>
             <input type="text" id="username" name="username" value="<%= user.username %>" required>
         </div>
 
         <div>
-            <label for="username">Password:</label>
-            <input type="password" id="password" name="password" value="" required>
+            <h2>Change password:</h2>
+            <label for="old_password">Old password</label>
+            <input type="password" id="old_password" name="old_password" value="">
+            <label for="new_password">New password</label>
+            <input type="password" id="new_password" name="new_password" value="">
         </div>
 
         <div>
-            <label for="picture_path">Picture URL:</label>
-            <input type="text" id="picture_path" name="picture_path" value="<%= user.picture_path %>">
+            <label for="picture">Change profile picture</label>
+            <input type="file" id="picture" name="picture" value="<%= user.picture_path %>">
         </div>
 
 
@@ -32,5 +35,23 @@
     </form>
 
     <a href="/profile/<%= user.id %>">Cancel</a>
+    <script>
+      const form = document.getElementById('form');
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const old_password = document.getElementById('old_password');
+        const new_password = document.getElementById('new_password');
+        console.log(old_password, new_password);
+        if((old_password !== "" && new_password !== "") && (old_password === new_password)) {
+          alert('New password cannot be the same as old password.');
+          return;
+        }
+        if(new_password && !old_password) {
+          alert('Please enter old password if you want to change the password.');
+          return;
+        }
+        e.target.submit();
+      });
+    </script>
 </body>
 </html>

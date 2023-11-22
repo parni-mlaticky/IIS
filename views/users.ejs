@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Users</title>
+</head>
+<body>
+  <h1>Users</h1>
+    <% for (let i = 0; i < users.length; i++) { %>
+        <% if (!userDataCookie && users[i].visibility != 2) { continue; } %>
+        <div>
+            <a href="gropus/<%= users[i].id %>" >
+                <h2><%= users[i].username %></h2>
+            </a>
+            <p><%= users[i] %></p>
+            <img src="<%= users[i].avatar %>">
+            <hr>
+        </div>
+    <% } %>
+</body>
+</html>
+

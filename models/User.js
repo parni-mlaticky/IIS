@@ -39,6 +39,15 @@ class User {
     }
   }
 
+  static async getAllWithVisibilityLevel(level) {
+    try {
+      const [rows] = await db.execute("SELECT * FROM Registered_user WHERE visibility >= ?", [level]);
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   static async getAll() {
     try {
       const [rows] = await db.execute("SELECT * FROM Registered_user");
