@@ -11,6 +11,9 @@ class User {
 
   async save() {
     try {
+      if(this.id) {
+        return this.update();
+      }
       const result = await db.execute(
         "INSERT INTO Registered_user (username, path_to_avatar, pwd_hash, visibility) VALUES (?, ?, ?, ?)",
         [
@@ -71,8 +74,8 @@ class User {
 
   async update() {
     try {
-      const [rows] = await db.execute(
-        "UPDATE Registered_user SET username = ?, picture_path = ?, password = ?, visibility = ? WHERE id = ?",
+      await db.execute(
+        "UPDATE Registered_user SET username = ?, path_to_avatar = ?, pwd_hash = ?, visibility = ? WHERE id = ?",
         [
           this.username,
           this.picture_path,
@@ -81,7 +84,7 @@ class User {
           this.id,
         ],
       );
-      return rows;
+      return this.id;
     } catch (err) {
       console.log(err);
     }

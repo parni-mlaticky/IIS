@@ -25,6 +25,11 @@ router.get("/register", (req, res) => {
   res.render("register", { title: "EJS Example", message: "Hello, EJS!" });
 });
 
+router.get("/logout", (req, res) => {
+  res.redirect("/auth/logout");
+});
+
+
 router.use((req, res, next) => {
   res.status(404).render("404", { url: req.originalUrl });
 });

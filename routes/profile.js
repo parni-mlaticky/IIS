@@ -1,12 +1,29 @@
 const express = require("express");
+const path = require("path");
+const multer = require("multer");
 const router = express.Router();
 const profileModel = require("../models/User");
+const bcrypt = require("bcrypt");
 const { authenticate, isAuthorized } = require("../middlewares/auth");
 module.exports = router;
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/");
+  },
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      file.originalname + "-" + Date.now() + path.extname(file.originalname),
+    );
+  },
+});
+
+const upload = multer({ storage: storage });
+
 router.get("/", authenticate, async (req, res) => {
   try {
-    const profileId = req.userData.userId;
+    const profileId = req.userData.id;
     if (!profileId) {
       return res
         .status(404)
@@ -15,7 +32,7 @@ router.get("/", authenticate, async (req, res) => {
     res.redirect(`/profile/${profileId}`);
   } catch (err) {
     console.log(err);
-    res.status(500).error("error", {
+    res.status(500).render("error", {
       message: "Error retrieving profile from database",
       status: 500,
     });
@@ -64,8 +81,7 @@ router.get(
   },
 );
 
-router.post("/:id", authenticate, isAuthorized("user"), async (req, res) => {
-  console.log("JIHAD JIHAD JIHAD");
+router.put("/:id", authenticate, isAuthorized("user"), upload.single("picture"), async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
     if (!profile) {
@@ -73,12 +89,22 @@ router.post("/:id", authenticate, isAuthorized("user"), async (req, res) => {
         .status(404)
         .render("404", { message: "Profile not found", url: req.url });
     }
-    profile.username = req.body.username;
-    profile.picture_path = req.body.picture_path;
-    profile.password = req.body.password;
-    profile.role = req.body.role;
-    profile.visibility = req.body.visibility;
-    await profile.save();
+    const form_old_password = req.body.old_password;
+    const old_password_hash = profile.pwd_hash;
+    const passwords_match = !form_old_password || await bcrypt.compare(form_old_password, old_password_hash);
+    if(!passwords_match) {
+      return res.status(400).json({ message: "Old password is incorrect" });
+    }
+    const new_password_hash = passwords_match ? await bcrypt.hash(req.body.new_password, 10) : profile.pwd_hash;
+    new_username = req.body.username || profile.username;
+    new_picture_path = req.file?.path || profile.path_to_avatar;
+    console.log(req);
+    console.log(req.file);
+    console.log(new_picture_path);
+    new_visibility = req.body.visibility || profile.visibility;
+    const profileObj = new profileModel(req.params.id, new_username, new_picture_path, new_password_hash, new_visibility);
+    await profileObj.save();
+    console.log(profileObj);
     res.redirect(`/profile/${req.params.id}`);
   } catch (err) {
     console.log(err);
