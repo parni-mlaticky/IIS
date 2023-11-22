@@ -25,6 +25,16 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.get("/:userid", async (req, res) => {
+  try {
+    const groups = await groupModel.getByUserId(req.params.userid);
+    res.render("groups", { groups });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error retrieving groups from database");
+  }
+});
+
 router.get("/:name", async (req, res) => {
   try {
     const groups = await groupModel.getByName(req.params.name);
