@@ -8,12 +8,17 @@ router.get("/", authenticate, async (req, res) => {
   try {
     const profileId = req.userData.userId;
     if (!profileId) {
-      return res.status(404).json({ message: "Profile not found" });
+      return res
+        .status(404)
+        .render("404", { message: "Profile not found", url: req.url });
     }
     res.redirect(`/profile/${profileId}`);
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error retrieving profile from database");
+    res.status(500).error("error", {
+      message: "Error retrieving profile from database",
+      status: 500,
+    });
   }
 });
 
@@ -21,13 +26,18 @@ router.get("/:id", async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
     if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
+      return res
+        .status(404)
+        .render("404", { message: "Profile not found", url: req.url });
     }
     res.render("profile", { user: profile });
     console.log(profile);
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error retrieving profile from database");
+    res.status(500).render("error", {
+      message: "Error retrieving profile from database",
+      status: 500,
+    });
   }
 });
 
@@ -39,12 +49,17 @@ router.get(
     try {
       const profile = await profileModel.getById(req.params.id);
       if (!profile) {
-        return res.status(404).json({ message: "Profile not found" });
+        return res
+          .status(404)
+          .render("404", { message: "Profile not found", url: req.url });
       }
       res.render("profile/edit", { user: profile });
     } catch (err) {
       console.log(err);
-      res.status(500).send("Error retrieving profile from database");
+      res.status(500).render("error", {
+        message: "Error retrieving profile from database",
+        status: 500,
+      });
     }
   },
 );
@@ -53,7 +68,9 @@ router.put("/:id", authenticate, isAuthorized("user"), async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
     if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
+      return res
+        .status(404)
+        .render("404", { message: "Profile not found", url: req.url });
     }
     profile.username = req.body.username;
     profile.picture_path = req.body.picture_path;
@@ -64,7 +81,9 @@ router.put("/:id", authenticate, isAuthorized("user"), async (req, res) => {
     res.redirect(`/profile/${req.params.id}`);
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error updating profile");
+    res
+      .status(500)
+      .render("error", { message: "Error updating profile", status: 500 });
   }
 });
 
@@ -72,12 +91,16 @@ router.delete("/:id", authenticate, isAuthorized("user"), async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
     if (!profile) {
-      return res.status(404).json({ message: "Profile not found" });
+      return res
+        .status(404)
+        .render("404", { message: "Profile not found", url: req.url });
     }
     await profile.delete();
     res.redirect("/");
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error deleting profile");
+    res
+      .status(500)
+      .render("error", { message: "Error deleting profile", status: 500 });
   }
 });

@@ -11,19 +11,26 @@ router.get("/:groupid", async (req, res) => {
   try {
     const threads = await threadModel.getAllByGroupId(req.params.groupid);
     if (!threads) {
-      return res.status(404).json({ message: "Threads not found" });
+      return res
+        .status(404)
+        .render("404", { message: "Threads not found", url: req.url });
     }
     res.render("threads", { threads });
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error retrieving threads from database");
+    res.status(500).render("error", {
+      message: "Error retrieving threads from database",
+      status: 500,
+    });
   }
 });
 
 router.post("/", authenticate, async (req, res) => {
   try {
     if (await threadModel.getByName(req.body.title)) {
-      return res.status(409).json({ message: "Thread already exists" });
+      return res
+        .status(409)
+        .render("error", { message: "Thread already exists", status: 409 });
     }
     const newThread = new threadModel(
       null,
@@ -37,7 +44,10 @@ router.post("/", authenticate, async (req, res) => {
     res.redirect(`/threads/${newThreadId}`);
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error creating thread");
+    res.status(500).render("error", {
+      message: "Error creating thread",
+      status: 500,
+    });
   }
 });
 
@@ -45,7 +55,9 @@ router.put("/:id", authenticate, isAuthorized("thread"), async (req, res) => {
   try {
     const thread = await threadModel.getById(req.params.id);
     if (!thread) {
-      return res.status(404).json({ message: "Thread not found" });
+      return res
+        .status(404)
+        .render("404", { message: "Thread not found", url: req.url });
     }
     thread.title = req.body.title;
     thread.content = req.body.content;
@@ -55,7 +67,9 @@ router.put("/:id", authenticate, isAuthorized("thread"), async (req, res) => {
     res.redirect(`/threads/${req.params.id}`);
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error updating thread");
+    res
+      .status(500)
+      .render("error", { message: "Error updating thread", status: 500 });
   }
 });
 
@@ -67,13 +81,18 @@ router.delete(
     try {
       const thread = await threadModel.getById(req.params.id);
       if (!thread) {
-        return res.status(404).json({ message: "Thread not found" });
+        return res
+          .status(404)
+          .render("404", { message: "Thread not found", url: req.url });
       }
       await thread.delete();
       res.redirect(`/groups/${thread.group_id}`);
     } catch (err) {
       console.log(err);
-      res.status(500).send("Error deleting thread");
+      res.status(500).render("error", {
+        message: "Error deleting thread",
+        status: 500,
+      });
     }
   },
 );
@@ -92,7 +111,9 @@ router.post("/:id/comments", authenticate, async (req, res) => {
     res.redirect(`/threads/${req.params.id}`);
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error creating comment");
+    res
+      .status(500)
+      .render("error", { message: "Error creating comment", status: 500 });
   }
 });
 
@@ -104,14 +125,18 @@ router.put(
     try {
       const comment = await commentModel.getById(req.params.commentsid);
       if (!comment) {
-        return res.status(404).json({ message: "Comment not found" });
+        return res
+          .status(404)
+          .render("404", { message: "Comment not found", url: req.url });
       }
       comment.content = req.body.content;
       await comment.save();
       res.redirect(`/threads/${req.params.id}`);
     } catch (err) {
       console.log(err);
-      res.status(500).send("Error updating comment");
+      res
+        .status(500)
+        .render("error", { message: "Error updating comment", status: 500 });
     }
   },
 );
@@ -124,13 +149,17 @@ router.delete(
     try {
       const comment = await commentModel.getById(req.params.commentsid);
       if (!comment) {
-        return res.status(404).json({ message: "Comment not found" });
+        return res
+          .status(404)
+          .render("404", { message: "Comment not found", url: req.url });
       }
       await comment.delete();
       res.redirect(`/threads/${req.params.id}`);
     } catch (err) {
       console.log(err);
-      res.status(500).send("Error deleting comment");
+      res
+        .status(500)
+        .render("error", { message: "Error deleting comment", status: 500 });
     }
   },
 );
@@ -150,7 +179,9 @@ router.post(
       res.redirect(`/threads/${req.params.id}`);
     } catch (err) {
       console.log(err);
-      res.status(500).send("Error creating vote");
+      res
+        .status(500)
+        .render("error", { message: "Error creating vote", status: 500 });
     }
   },
 );
@@ -163,14 +194,18 @@ router.put(
     try {
       const vote = await userCommentVoteModel.getById(req.params.commentsid);
       if (!vote) {
-        return res.status(404).json({ message: "Vote not found" });
+        return res
+          .status(404)
+          .render("404", { message: "Vote not found", url: req.url });
       }
       vote.vote = req.body.vote;
       await vote.save();
       res.redirect(`/threads/${req.params.id}`);
     } catch (err) {
       console.log(err);
-      res.status(500).send("Error updating vote");
+      res
+        .status(500)
+        .render("error", { message: "Error updating vote", status: 500 });
     }
   },
 );
