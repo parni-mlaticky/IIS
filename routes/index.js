@@ -11,4 +11,8 @@ router.use("/profile", profileRoute);
 router.use("/groups", groupsRoute);
 router.use("/threads", threadsRoute);
 
+router.get('/', (req, res) => {
+  res.render('index', { title: 'EJS Example', message: 'Hello, EJS!' });
+});
+
 module.exports = router;
