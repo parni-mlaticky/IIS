@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Grpus</title>
+</head>
+<body>
+  <h1>Grpus</h1>
+    <% if (user) { %>
+      <h2>Create group</h2>
+      <form action="/groups" method="post", enctype="multipart/form-data">
+      <label for="name">Group name: </label>
+      <input type="text" name="name" placeholder="Name" /> <br>
+      <label for="description">Group description: </label>
+      <input type="text" name="description" placeholder="Despctiption" /> <br>
+      <label for="avatar">Avatar</label>
+      <label for="visibility">Visibility</label>
+      <select name="visibility" id="visibility">
+        <option value="2">Public</option>
+        <option value="1">Priate</option>
+        <option value="0">Invite only</option>
+      </select>
+      <input type="file" name="avatar" placeholder="avatar"/> <br>
+      <input type="submit" value="Create group" /> <br>
+    <% } %>
+
+    <% for (let i = 0; i < (groups ? groups.length : 0); i++) { %>
+        <% if (!user && groups[i].visibility != 2) { continue; } %>
+        <div>
+            <a href="/groups/<%= groups[i].id %>" >
+              <h2><%= groups[i].name %></h2>
+            </a>
+              <p><%= groups[i].description %></p>
+              <img src="/<%= groups[i].path_to_avatar %>">
+            <hr>
+        </div>
+    <% } %>
+</body>
+</html>

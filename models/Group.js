@@ -10,10 +10,11 @@ class Group {
   async save() {
     try {
       const [rows] = await db.query(
-        "INSERT INTO `Group` (name, description, picture_path, visibility) VALUES (?, ?, ?, ?)",
+        "INSERT INTO `Group` (name, description, path_to_avatar, visibility) VALUES (?, ?, ?, ?)",
         [this.name, this.description, this.picture_path, this.visibility],
       );
-      return rows;
+      this.id = rows.insertId;
+      return this.id;
     } catch (err) {
       console.log(err);
     }

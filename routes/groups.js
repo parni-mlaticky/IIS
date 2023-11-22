@@ -1,15 +1,26 @@
 const express = require("express");
 const router = express.Router();
 const groupModel = require("../models/Group");
-const { authenticate, isAuthorized } = require("../middlewares/auth");
+const { authenticate, isAuthorized, checkLogin } = require("../middlewares/auth");
+const multer = require("multer");
+const path = require("path");
 
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/group_avatars/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname + "-" + Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage: storage });
 module.exports = router;
 
-router.get("/", async (req, res) => {
+router.get("/", checkLogin, async (req, res) => {
   try {
     const groups = await groupModel.getAll();
-
-    res.render("groups", { groups, userDataCookie: req.userData });
+    res.render("groups", { groups, user: req.userData });
   } catch (err) {
     console.log(err);
     res.status(500).send("Error retrieving groups from database");
@@ -19,10 +30,14 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const group = await groupModel.getById(req.params.id);
-    if (!group) {
-      return res.status(404).json({ message: "Group not found" });
+    console.log(group);
+
+    if (group.length == 0) {
+      res.status(404).send("Group not found");
+      return;
     }
-    res.render("groups/detail", { group });
+
+    res.render("groups/detail", { group, userDataCookie: req.userData });
   } catch (err) {
     console.log(err);
     res.status(500).send("Error retrieving group from database");
@@ -55,18 +70,25 @@ router.get("/:name", async (req, res) => {
   }
 });
 
-router.post("/", authenticate, async (req, res) => {
+router.post("/", authenticate, upload.single('avatar'), async (req, res) => {
   try {
-    if (await groupModel.getByName(req.body.name)) {
+    const existing = await groupModel.getByName(req.body.name);
+    console.log(existing);
+    if (existing.length != 0) {
       return res.status(409).json({ message: "Group already exists" });
     }
+
+    if (!req.body.name || !req.body.description || !req.body.visibility || !req.file.path) {
+      return res.status(500).send("All form fileds must be filled");
+    }
+
     const newGroup = new groupModel(
-      null,
       req.body.name,
       req.body.description,
-      req.body.picture_path,
+      req.file.path,
       req.body.visibility,
     );
+
     const newGroupID = await newGroup.save();
     res.redirect(`/groups/${newGroupID}`);
   } catch (err) {
