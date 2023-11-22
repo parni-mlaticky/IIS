@@ -10,4 +10,6 @@ const pool = mysql.createPool({
   waitForConnections: true,
 });
 
+console.log(process.env.DB_HOST);
+
 module.exports = pool;
