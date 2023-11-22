@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const threadModel = require("../models/Thread");
 const commentModel = require("../models/Comment");
-const groupModel = require("../models/Group");
+const userCommentVoteModel = require("../models/User_Comment_vote");
 const { authenticate, isAuthorized } = require("../middlewares/auth");
 
 module.exports = router;
@@ -117,18 +117,39 @@ router.delete(
   },
 );
 
-router.post("/:id/vote", (req, res) => {
-  res.send("Vote");
-});
+router.post(
+  "/:id/comments/:commentsid/vote",
+  authenticate,
+  async (req, res) => {
+    try {
+      const newVote = new userCommentVoteModel(
+        null,
+        req.userData.userId,
+        req.params.commentsid,
+        req.body.vote,
+      );
+      await newVote.save();
+      res.redirect(`/threads/${req.params.id}`);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Error creating vote");
+    }
+  },
+);
 
-router.put("/:id/vote", (req, res) => {
-  res.send("Edit Vote");
-});
-
-router.post("/:id/comments/:commentsid/vote", (req, res) => {
-  res.send("Vote");
-});
-
-router.put("/:id/comments/:commentsid/vote", (req, res) => {
-  res.send("Edit Vote");
-});
+router.put(
+  "/:id/comments/:commentsid/vote",
+  authenticate,
+  isAuthorized("userCommentVote"),
+  async (req, res) => {
+    try {
+      const vote = await userCommentVoteModel.getById(req.params.commentsid);
+      vote.vote = req.body.vote;
+      await vote.save();
+      res.redirect(`/threads/${req.params.id}`);
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Error updating vote");
+    }
+  },
+);

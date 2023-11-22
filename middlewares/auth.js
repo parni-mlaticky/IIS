@@ -3,6 +3,7 @@ const commentModel = require("../models/Comment");
 const groupModel = require("../models/Group");
 const threadModel = require("../models/Thread");
 const userModel = require("../models/User");
+const userCommentVoteModel = require("../models/User_Comment_vote");
 
 const authenticate = (req, res, next) => {
   try {
@@ -47,6 +48,11 @@ function isAuthorized(entityType) {
         case "user":
           const user = await userModel.getById(resourceId);
           ownerUserId = user.id;
+          break;
+        case "userCommentVote":
+          const userCommentVote =
+            await userCommentVoteModel.getById(resourceId);
+          ownerUserId = userCommentVote.user_id;
           break;
       }
       if (userId === ownerUserId || req.userData.role === "admin") {
