@@ -3,11 +3,25 @@ const bcrypt = require("bcrypt");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/User");
+const multer = require("multer");
+const path = require("path");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, file.originalname + "-" + Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage: storage });
 
 module.exports = router;
 
 router.post("/login", async (req, res) => {
   try {
+    console.log(req.body);
     if (!req.body.username || !req.body.password) {
       return res.status(400).json({ message: "Username or password missing" });
     }
@@ -17,11 +31,10 @@ router.post("/login", async (req, res) => {
     const { username, password } = req.body;
     const user = await userModel.getByUsername(username);
 
-    if (user && (await bcrypt.compare(password, user.password))) {
+    if (user && (await bcrypt.compare(password, user.pwd_hash))) {
       const payload = {
         userId: user.id,
         username: user.username,
-        role: user.role,
       };
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "1h",
@@ -37,10 +50,12 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/register", async (req, res) => {
+router.post("/register", upload.single('avatar'), async (req, res) => {
   try {
-    const { username, picture_path, password, role, visibility } = req.body;
+    const { username, password } = req.body;
+    const visibility = 0;
     const hashedPassword = await bcrypt.hash(password, 10);
+    const picture_path = req.file.path;
 
     if (await userModel.getByUsername(username)) {
       return res.status(409).json({ message: "Username already exists" });
@@ -51,7 +66,6 @@ router.post("/register", async (req, res) => {
       username,
       picture_path,
       hashedPassword,
-      role,
       visibility,
     );
     await newUser.save();

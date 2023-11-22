@@ -1,10 +1,14 @@
 const express = require("express");
+const bodyParser = require("body-parser");
 const app = express();
 const routes = require("./routes");
+const multer = require("multer");
 require("dotenv").config();
 
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 app.use("/", routes);
 
