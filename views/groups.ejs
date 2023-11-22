@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Grpus</title>
+</head>
+<body>
+  <h1>Grpus</h1>
+    <% for (let i = 0; i < groups.length; i++) { %>
+        <% if (!userDataCookie && groups[i].visibility != 2) { continue; } %>
+        <div>
+            <a href="gropus/<%= groups[i].id %>" >
+                <h2><%= groups[i].name %></h2>
+            </a>
+            <p><%= groups[i].description %></p>
+            <img src="<%= groups[i].avatar %>">
+            <hr>
+        </div>
+    <% } %>
+</body>
+</html>
