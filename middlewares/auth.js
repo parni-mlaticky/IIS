@@ -55,7 +55,7 @@ function isAuthorized(entityType) {
           ownerUserId = userCommentVote.user_id;
           break;
       }
-      if (userId === ownerUserId || req.userData.role === "admin") {
+      if (userId === ownerUserId) {
         next();
       } else {
         return res.status(403).json({ message: "Authorization failed" });
