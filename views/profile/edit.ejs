@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile</title>
+</head>
+<body>
+    <h1>Edit Profile</h1>
+
+    <form action="/profile/update" method="post">
+
+    <input type="hidden" name="_method" value="PUT"> 
+        
+        <div>
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" value="<%= user.username %>" required>
+        </div>
+
+        <div>
+            <label for="username">Password:</label>
+            <input type="password" id="password" name="password" value="" required>
+        </div>
+
+        <div>
+            <label for="picture_path">Picture URL:</label>
+            <input type="text" id="picture_path" name="picture_path" value="<%= user.picture_path %>">
+        </div>
+
+
+        <button type="submit">Update Profile</button>
+    </form>
+
+    <a href="/profile/<%= user.id %>">Cancel</a>
+</body>
+</html>
