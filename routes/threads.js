@@ -19,6 +19,9 @@ router.get("/:groupid", async (req, res) => {
 
 router.post("/", authenticate, async (req, res) => {
   try {
+    if (await threadModel.getByName(req.body.title)) {
+      return res.status(409).json({ message: "Thread already exists" });
+    }
     const newThread = new threadModel(
       null,
       req.body.title,

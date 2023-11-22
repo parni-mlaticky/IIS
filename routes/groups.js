@@ -37,6 +37,9 @@ router.get("/:name", async (req, res) => {
 
 router.post("/", authenticate, async (req, res) => {
   try {
+    if (await groupModel.getByName(req.body.name)) {
+      return res.status(409).json({ message: "Group already exists" });
+    }
     const newGroup = new groupModel(
       null,
       req.body.name,
