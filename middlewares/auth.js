@@ -5,6 +5,22 @@ const threadModel = require("../models/Thread");
 const userModel = require("../models/User");
 const userCommentVoteModel = require("../models/User_Comment_vote");
 
+const checkLogin = (req, res, next) => {
+  try {
+    const token = req.cookies.token;
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.isLogged = true;
+      req.userData = decoded;  // You can use this to access user data in your templates
+    } else {
+      req.isLogged = false;
+    }
+  } catch (err) {
+    req.isLogged = false;
+  }
+  next();
+};
+
 const authenticate = (req, res, next) => {
   try {
     const token = req.cookies.token;
@@ -69,4 +85,4 @@ function isAuthorized(entityType) {
   };
 }
 
-module.exports = { authenticate, isAdmin, isAuthorized };
+module.exports = { authenticate, isAdmin, isAuthorized, checkLogin };
