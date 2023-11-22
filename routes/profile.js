@@ -22,6 +22,7 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
+
 router.get("/:id", async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
@@ -31,7 +32,6 @@ router.get("/:id", async (req, res) => {
         .render("404", { message: "Profile not found", url: req.url });
     }
     res.render("profile", { user: profile });
-    console.log(profile);
   } catch (err) {
     console.log(err);
     res.status(500).render("error", {
@@ -64,7 +64,8 @@ router.get(
   },
 );
 
-router.put("/:id", authenticate, isAuthorized("user"), async (req, res) => {
+router.post("/:id", authenticate, isAuthorized("user"), async (req, res) => {
+  console.log("JIHAD JIHAD JIHAD");
   try {
     const profile = await profileModel.getById(req.params.id);
     if (!profile) {
