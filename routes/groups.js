@@ -19,6 +19,9 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const group = await groupModel.getById(req.params.id);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
     res.render("groups/detail", { group });
   } catch (err) {
     console.log(err);
@@ -29,6 +32,9 @@ router.get("/:id", async (req, res) => {
 router.get("/:userid", async (req, res) => {
   try {
     const groups = await groupModel.getByUserId(req.params.userid);
+    if (!groups) {
+      return res.status(404).json({ message: "Groups not found" });
+    }
     res.render("groups", { groups });
   } catch (err) {
     console.log(err);
@@ -39,6 +45,9 @@ router.get("/:userid", async (req, res) => {
 router.get("/:name", async (req, res) => {
   try {
     const groups = await groupModel.getByName(req.params.name);
+    if (!groups) {
+      return res.status(404).json({ message: "Groups not found" });
+    }
     res.render("groups", { groups });
   } catch (err) {
     console.log(err);
@@ -69,6 +78,9 @@ router.post("/", authenticate, async (req, res) => {
 router.put("/:id", authenticate, isAuthorized("group"), async (req, res) => {
   try {
     const group = await groupModel.getById(req.params.id);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
     group.name = req.body.name;
     group.description = req.body.description;
     group.picture_path = req.body.picture_path;
@@ -84,6 +96,9 @@ router.put("/:id", authenticate, isAuthorized("group"), async (req, res) => {
 router.delete("/:id", authenticate, isAuthorized("group"), async (req, res) => {
   try {
     const group = await groupModel.getById(req.params.id);
+    if (!group) {
+      return res.status(404).json({ message: "Group not found" });
+    }
     await group.delete();
     res.redirect("/groups");
   } catch (err) {

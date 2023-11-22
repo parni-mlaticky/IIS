@@ -10,6 +10,9 @@ module.exports = router;
 router.get("/:groupid", async (req, res) => {
   try {
     const threads = await threadModel.getAllByGroupId(req.params.groupid);
+    if (!threads) {
+      return res.status(404).json({ message: "Threads not found" });
+    }
     res.render("threads", { threads });
   } catch (err) {
     console.log(err);
@@ -41,6 +44,9 @@ router.post("/", authenticate, async (req, res) => {
 router.put("/:id", authenticate, isAuthorized("thread"), async (req, res) => {
   try {
     const thread = await threadModel.getById(req.params.id);
+    if (!thread) {
+      return res.status(404).json({ message: "Thread not found" });
+    }
     thread.title = req.body.title;
     thread.content = req.body.content;
     thread.picture_path = req.body.picture_path;
@@ -60,6 +66,9 @@ router.delete(
   async (req, res) => {
     try {
       const thread = await threadModel.getById(req.params.id);
+      if (!thread) {
+        return res.status(404).json({ message: "Thread not found" });
+      }
       await thread.delete();
       res.redirect(`/groups/${thread.group_id}`);
     } catch (err) {
@@ -94,6 +103,9 @@ router.put(
   async (req, res) => {
     try {
       const comment = await commentModel.getById(req.params.commentsid);
+      if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
       comment.content = req.body.content;
       await comment.save();
       res.redirect(`/threads/${req.params.id}`);
@@ -111,6 +123,9 @@ router.delete(
   async (req, res) => {
     try {
       const comment = await commentModel.getById(req.params.commentsid);
+      if (!comment) {
+        return res.status(404).json({ message: "Comment not found" });
+      }
       await comment.delete();
       res.redirect(`/threads/${req.params.id}`);
     } catch (err) {
@@ -147,6 +162,9 @@ router.put(
   async (req, res) => {
     try {
       const vote = await userCommentVoteModel.getById(req.params.commentsid);
+      if (!vote) {
+        return res.status(404).json({ message: "Vote not found" });
+      }
       vote.vote = req.body.vote;
       await vote.save();
       res.redirect(`/threads/${req.params.id}`);

@@ -11,7 +11,10 @@ const storage = multer.diskStorage({
     cb(null, "public/");
   },
   filename: (req, file, cb) => {
-    cb(null, file.originalname + "-" + Date.now() + path.extname(file.originalname));
+    cb(
+      null,
+      file.originalname + "-" + Date.now() + path.extname(file.originalname),
+    );
   },
 });
 
@@ -21,11 +24,10 @@ module.exports = router;
 
 router.post("/login", async (req, res) => {
   try {
-    console.log(req.body);
     if (!req.body.username || !req.body.password) {
       return res.status(400).json({ message: "Username or password missing" });
     }
-    if (req.userData) {
+    if (req.cookies.token) {
       return res.status(400).json({ message: "User already logged in" });
     }
     const { username, password } = req.body;
@@ -40,6 +42,7 @@ router.post("/login", async (req, res) => {
         expiresIn: "1h",
       });
 
+      res.cookie("token", token, { httpOnly: true, maxAge: 3600000 });
       res.status(200).json({ message: "User logged in successfully", token });
     } else {
       res.status(401).json({ message: "Invalid username or password" });
@@ -50,12 +53,20 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.post("/register", upload.single('avatar'), async (req, res) => {
+router.post("/register", upload.single("avatar"), async (req, res) => {
   try {
     const { username, password } = req.body;
     const visibility = 0;
     const hashedPassword = await bcrypt.hash(password, 10);
     const picture_path = req.file.path;
+
+    if (!username || !password) {
+      return res.status(400).json({ message: "Username or password missing" });
+    }
+
+    if (req.cookies.token) {
+      return res.status(400).json({ message: "User already logged in" });
+    }
 
     if (await userModel.getByUsername(username)) {
       return res.status(409).json({ message: "Username already exists" });
@@ -72,6 +83,7 @@ router.post("/register", upload.single('avatar'), async (req, res) => {
     const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
+    res.cookie("token", token, { httpOnly: true, maxAge: 3600000 });
     res.status(201).json({ message: "User registered successfully", token });
   } catch (err) {
     console.log(err);
@@ -80,5 +92,6 @@ router.post("/register", upload.single('avatar'), async (req, res) => {
 });
 
 router.post("/logout", (req, res) => {
+  res.clearCookie("token");
   res.json({ message: "User logged out successfully" });
 });
