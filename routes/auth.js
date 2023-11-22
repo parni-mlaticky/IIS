@@ -48,7 +48,7 @@ router.post("/login", async (req, res) => {
       });
 
       res.cookie("token", token, { httpOnly: true, maxAge: 3600000 });
-      res.status(200).redirect("/", { message: "User logged in successfully" });
+      res.status(200).redirect("/");
     } else {
       res.status(401).render("erorr", {
         message: "Invalid username or password",
@@ -101,7 +101,7 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
       expiresIn: "1h",
     });
     res.cookie("token", token, { httpOnly: true, maxAge: 3600000 });
-    res.status(201).redirect("/", { message: "User registered successfully" });
+    res.status(201).redirect("/");
   } catch (err) {
     console.log(err);
     res
@@ -112,5 +112,5 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
 
 router.post("/logout", (req, res) => {
   res.clearCookie("token");
-  res.redirect("/", { message: "User logged out successfully", status: 200 });
+  res.redirect("/");
 });

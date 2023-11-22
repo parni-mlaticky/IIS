@@ -11,7 +11,7 @@ const checkLogin = (req, res, next) => {
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.isLogged = true;
-      req.userData = decoded;  // You can use this to access user data in your templates
+      req.userData = decoded; // You can use this to access user data in your templates
     } else {
       req.isLogged = false;
     }
@@ -25,14 +25,14 @@ const authenticate = (req, res, next) => {
   try {
     const token = req.cookies.token;
     if (!token) {
-      return res.redirect("/login").json({ message: "Authentication failed" });
+      return res.redirect("/login");
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userData = decoded;
     next();
   } catch (err) {
     console.log(err);
-    res.redirect("/login").json({ message: "Authentication failed" });
+    res.redirect("/login");
   }
 };
 
