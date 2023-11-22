@@ -14,7 +14,22 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.put("/:id", authenticate, isAuthorized, async (req, res) => {
+router.get(
+  "/:id/edit",
+  authenticate,
+  isAuthorized("user"),
+  async (req, res) => {
+    try {
+      const profile = await profileModel.getById(req.params.id);
+      res.render("profile/edit", { profile });
+    } catch (err) {
+      console.log(err);
+      res.status(500).send("Error retrieving profile from database");
+    }
+  },
+);
+
+router.put("/:id", authenticate, isAuthorized("user"), async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
     profile.username = req.body.username;
@@ -30,7 +45,7 @@ router.put("/:id", authenticate, isAuthorized, async (req, res) => {
   }
 });
 
-router.delete("/:id", authenticate, isAuthorized, async (req, res) => {
+router.delete("/:id", authenticate, isAuthorized("user"), async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
     await profile.delete();

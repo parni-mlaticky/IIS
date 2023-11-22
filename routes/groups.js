@@ -8,7 +8,8 @@ module.exports = router;
 router.get("/", async (req, res) => {
   try {
     const groups = await groupModel.getAll();
-    res.render("groups", { groups });
+
+    res.render("groups", { groups, userDataCookie: req.userData });
   } catch (err) {
     console.log(err);
     res.status(500).send("Error retrieving groups from database");
@@ -22,6 +23,16 @@ router.get("/:id", async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).send("Error retrieving group from database");
+  }
+});
+
+router.get("/:userid", async (req, res) => {
+  try {
+    const groups = await groupModel.getByUserId(req.params.userid);
+    res.render("groups", { groups });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error retrieving groups from database");
   }
 });
 

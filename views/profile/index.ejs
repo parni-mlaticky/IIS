@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+</head>
+<body>
+    <h1>User Profile</h1>
+
+    <div class="user-profile">
+        <% if (user.picture_path) { %>
+            <img src="<%= user.picture_path %>" alt="Profile Picture" style="width: 150px; height: 150px;">
+        <% } else { %>
+            <p>No picture available</p>
+        <% } %>
+
+        <h2>Username: <%= user.username %></h2>
+
+        <div class="profile-actions">
+            <a href="/profile/<%= user.id %>/edit">Edit Profile</a>
+        </div>
+    </div>
+</body>
+</html>
