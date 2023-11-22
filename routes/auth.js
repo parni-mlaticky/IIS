@@ -8,6 +8,12 @@ module.exports = router;
 
 router.post("/login", async (req, res) => {
   try {
+    if (!req.body.username || !req.body.password) {
+      return res.status(400).json({ message: "Username or password missing" });
+    }
+    if (req.userData) {
+      return res.status(400).json({ message: "User already logged in" });
+    }
     const { username, password } = req.body;
     const user = await userModel.getByUsername(username);
 
