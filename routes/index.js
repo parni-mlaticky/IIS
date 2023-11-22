@@ -11,16 +11,20 @@ router.use("/profile", profileRoute);
 router.use("/groups", groupsRoute);
 router.use("/threads", threadsRoute);
 
-router.get('/', (req, res) => {
-  res.render('index', { title: 'EJS Example', message: 'Hello, EJS!' });
+router.get("/", (req, res) => {
+  res.render("index", { title: "EJS Example", message: "Hello, EJS!" });
 });
 
-router.get('/login', (req, res) => {
-  res.render('login', { title: 'EJS Example', message: 'Hello, EJS!' });
+router.get("/login", (req, res) => {
+  res.render("login", { title: "EJS Example", message: "Hello, EJS!" });
 });
 
-router.get('/register', (req, res) => {
-  res.render('register', { title: 'EJS Example', message: 'Hello, EJS!' });
+router.get("/register", (req, res) => {
+  res.render("register", { title: "EJS Example", message: "Hello, EJS!" });
+});
+
+router.use((req, res, next) => {
+  res.status(404).render("404", { url: req.originalUrl });
 });
 
 module.exports = router;
