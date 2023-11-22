@@ -81,6 +81,19 @@ router.get(
   },
 );
 
+const visibility_to_id = (visibility) => {
+  switch (visibility) {
+    case "public":
+      return 2;
+    case "private":
+      return 0;
+    case "registered":
+      return 1;
+    default:
+      return 0;
+  }
+};
+
 router.put("/:id", authenticate, isAuthorized("user"), upload.single("picture"), async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
@@ -98,11 +111,8 @@ router.put("/:id", authenticate, isAuthorized("user"), upload.single("picture"),
     const new_password_hash = passwords_match ? await bcrypt.hash(req.body.new_password, 10) : profile.pwd_hash;
     new_username = req.body.username || profile.username;
     new_picture_path = req.file?.path || profile.path_to_avatar;
-    console.log(req);
-    console.log(req.file);
-    console.log(new_picture_path);
     new_visibility = req.body.visibility || profile.visibility;
-    const profileObj = new profileModel(req.params.id, new_username, new_picture_path, new_password_hash, new_visibility);
+    const profileObj = new profileModel(req.params.id, new_username, new_picture_path, new_password_hash, visibility_to_id(new_visibility));
     await profileObj.save();
     console.log(profileObj);
     res.redirect(`/profile/${req.params.id}`);

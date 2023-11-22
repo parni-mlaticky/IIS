@@ -4,6 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
+    <script>
+      const get_visibility = (visibility) => {
+        switch(visibility) {
+          case 0:
+            return "Private";
+          case 1:
+            return "Registered users";
+          case 2:
+            return "Public";
+        }
+      }
+    </script>
 </head>
 <body>
     <h1>Edit Profile</h1>
@@ -31,10 +43,20 @@
         </div>
 
 
+        <div>
+          <h2>Profile visibility</h2>
+          <select id="visibility" name="visibility">
+            <option value="private" <%= user.visibility === 0 ? 'selected' : '' %>>Private</option>
+            <option value="registered" <%= user.visibility === 1 ? 'selected' : '' %>>Registered users</option>
+            <option value="public" <%= user.visibility === 2 ? 'selected' : '' %>>Public</option>
+          </select>
+        </div>
+
         <button type="submit">Update Profile</button>
     </form>
 
     <a href="/profile/<%= user.id %>">Cancel</a>
+
     <script>
       form.addEventListener('submit', (e) => {
         const old_password = document.getElementById('old_password').value;
