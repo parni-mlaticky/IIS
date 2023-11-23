@@ -3,7 +3,13 @@ const router = express.Router();
 const groupModel = require("../models/Group");
 const userGroupModel = require("../models/User_Group_role");
 const userCommentVoteModel = require("../models/User_Comment_vote");
-const { groupRole, Visibility, GroupRole } = require("../constants")
+const NotificationModel = require("../models/Notification");
+const {
+  groupRole,
+  Visibility,
+  GroupRole,
+  NotificationType,
+} = require("../constants");
 
 const {
   authenticate,
@@ -12,6 +18,7 @@ const {
 } = require("../middlewares/auth");
 const multer = require("multer");
 const path = require("path");
+const User_Group_role = require("../models/User_Group_role");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -32,8 +39,14 @@ router.get("/", async (req, res) => {
   try {
     const groups = await groupModel.getAll();
     // TDOO show to members only if visibility is 1
-    const showThreadCreate = req.userData || groups[i].visibility == Visibility.PUBLIC;
-    res.render("groups", { groups, user: req.userData, title: "Groups", showThreadCreate});
+    const showThreadCreate =
+      req.userData || groups[i].visibility == Visibility.PUBLIC;
+    res.render("groups", {
+      groups,
+      user: req.userData,
+      title: "Groups",
+      showThreadCreate,
+    });
   } catch (err) {
     console.log(err);
     const message = "Error retrieving groups from database";
@@ -61,19 +74,46 @@ router.get("/:id", checkLogin, async (req, res) => {
       return res.status(404).send("Group not found");
     }
 
-    let user_can_edit = false
+    let user_can_edit = false;
     if (req.userData) {
-      const user_group = await userGroupModel.getGroupOwnershipByUserId(req.userData.id, group[0].id);
+      const user_group = await userGroupModel.getGroupOwnershipByUserId(
+        req.userData.id,
+        group[0].id,
+      );
       user_can_edit = user_group.length == 1;
     }
+
+    let ownerUser = null;
+    let moderatorUsers = [];
+    let members = [];
+
+    const groupMembers = await User_Group_role.getGroupMembers(group[0].id);
+
+    groupMembers.forEach((member) => {
+      switch (member.role) {
+        case groupRole.OWNER:
+          ownerUser = UserModel.getById(member.user_id);
+          break;
+        case groupRole.MODERATOR:
+          moderatorUsers.push(UserModel.getById(member.user_id));
+          break;
+        case groupRole.MEMBER:
+          members.push(UserModel.getById(member.user_id));
+          break;
+      }
+    });
+
+    console.log(ownerUser, moderatorUsers, members);
 
     res.render("groups/detail", {
       group: group[0],
       user: req.userData,
       title: group[0].name,
       user_can_edit,
+      owner: ownerUser,
+      moderators: moderatorUsers,
+      members: members,
     });
-
   } catch (err) {
     console.log(err);
     const message = "Error retrieving group from database";
@@ -167,11 +207,11 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
     );
 
     const newGroupID = await newGroup.save();
-    const newUserGroupRole = new userGroupModel (
+    const newUserGroupRole = new userGroupModel(
       null,
       `${req.userData.id}`,
       newGroupID,
-      GroupRole.OWNER ,
+      GroupRole.OWNER,
     );
     console.log(await newUserGroupRole.save());
     res.redirect(`/groups/${newGroupID}`);
@@ -186,53 +226,62 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
   }
 });
 
-router.put("/:id", authenticate, checkLogin, isAuthorized("group"), upload.single("avatar"), async (req, res) => {
-  try {
-    const group = await groupModel.getById(req.params.id);
-    if (!group) {
-      const message = "Group not found";
-      return res.status(404).render("404", {
+router.put(
+  "/:id",
+  authenticate,
+  checkLogin,
+  isAuthorized("group"),
+  upload.single("avatar"),
+  async (req, res) => {
+    try {
+      const group = await groupModel.getById(req.params.id);
+      if (!group) {
+        const message = "Group not found";
+        return res.status(404).render("404", {
+          message: message,
+          url: req.url,
+          title: `${404} ${message}`,
+        });
+      }
+
+      // Hide non-public groups from unlogged-in users.
+      if (!req.userData && group[0].visibility != Visibility.PUBLIC) {
+        return res.status(404).send("Group not found");
+      }
+
+      const sameName = await groupModel.getByName(req.body.name);
+      if (sameName.length != 0) {
+        return res.status(500).send("Group with this name already exists");
+      }
+
+      group[0].name = req.body.name || group[0].name;
+      group[0].description = req.body.description || group[0].description;
+      group[0].path_to_avatar = req.file
+        ? req.file.path
+        : group[0].path_to_avatar;
+      group[0].visibility = req.body.visibility || group[0].visibility;
+
+      const updatedGroup = new groupModel(
+        req.params.id,
+        group[0].name,
+        group[0].description,
+        group[0].path_to_avatar,
+        group[0].visibility,
+      );
+      await updatedGroup.save();
+
+      res.redirect(`/groups/${req.params.id}`);
+    } catch (err) {
+      console.log(err);
+      const message = "Error updating group";
+      res.status(500).render("error", {
         message: message,
-        url: req.url,
-        title: `${404} ${message}`,
+        status: 500,
+        title: `${500} ${message}`,
       });
     }
-
-    // Hide non-public groups from unlogged-in users.
-    if (!req.userData && group[0].visibility != Visibility.PUBLIC) {
-      return res.status(404).send("Group not found");
-    }
-
-    const sameName = await groupModel.getByName(req.body.name);
-    if (sameName.length != 0) {
-      return res.status(500).send("Group with this name already exists");
-    }
-
-    group[0].name = req.body.name || group[0].name;
-    group[0].description = req.body.description || group[0].description;
-    group[0].path_to_avatar = req.file ? req.file.path : group[0].path_to_avatar;
-    group[0].visibility = req.body.visibility || group[0].visibility;
-
-    const updatedGroup = new groupModel(
-      req.params.id,
-      group[0].name,
-      group[0].description,
-      group[0].path_to_avatar,
-      group[0].visibility,
-    );
-    await updatedGroup.save();
-
-    res.redirect(`/groups/${req.params.id}`);
-  } catch (err) {
-    console.log(err);
-    const message = "Error updating group";
-    res.status(500).render("error", {
-      message: message,
-      status: 500,
-      title: `${500} ${message}`,
-    });
-  }
-});
+  },
+);
 
 router.delete("/:id", authenticate, isAuthorized("group"), async (req, res) => {
   try {
@@ -257,3 +306,96 @@ router.delete("/:id", authenticate, isAuthorized("group"), async (req, res) => {
     });
   }
 });
+
+router.post("/:id/request_moderator", authenticate, async (req, res) => {
+  try {
+    const group = await groupModel.getById(req.params.id);
+    if (!group) {
+      const message = "Group not found";
+      return res.status(404).render("404", {
+        message: message,
+        url: req.url,
+        title: `${404} ${message}`,
+      });
+    }
+    const newNotification = new NotificationModel(
+      null,
+      req.params.id,
+      req.userData.id,
+      userGroupModel.getGroupOwner(req.params.id)[0].user_id,
+      NotificationType.MODERATOR_REQUEST,
+      `${req.userData.username} requested to be a moderator of ${group[0].name}`,
+    );
+    await newNotification.save();
+    res.redirect(`/groups/${req.params.id}`);
+  } catch (err) {
+    console.log(err);
+    const message = "Error requesting moderator";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
+  }
+});
+
+router.post("/:id/invite/:userId", authenticate, async (req, res) => {
+  try {
+    const group = await groupModel.getById(req.params.id);
+    if (!group) {
+      const message = "Group not found";
+      return res.status(404).render("404", {
+        message: message,
+        url: req.url,
+        title: `${404} ${message}`,
+      });
+    }
+    const newNotification = new NotificationModel(
+      null,
+      req.params.id,
+      req.userData.id,
+      req.params.userId,
+      NotificationType.INVITE,
+      `${req.userData.username} invited you to ${group[0].name}`,
+    );
+    await newNotification.save();
+    res.redirect(`/groups/${req.params.id}`);
+  } catch (err) {
+    console.log(err);
+    const message = "Error inviting user to group";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
+  }
+});
+
+router.post(
+  "/:id/hand_over_ownership/:userid",
+  authenticate,
+  isAuthorized("group"),
+  async (req, res) => {
+    try {
+      const group = await groupModel.getById(req.params.id);
+      if (!group) {
+        const message = "Group not found";
+        return res.status(404).render("404", {
+          message: message,
+          url: req.url,
+          title: `${404} ${message}`,
+        });
+      }
+      userGroupModel.hand_over_ownership(req.params.userid, req.params.id);
+      res.redirect(`/groups/${req.params.id}`);
+    } catch (err) {
+      console.log(err);
+      const message = "Error handing over ownership of group";
+      res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
+      });
+    }
+  },
+);

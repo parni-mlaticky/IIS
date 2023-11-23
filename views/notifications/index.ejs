@@ -1,0 +1,11 @@
+<%- include('../partials/navbar') %>
+  <h1>Notifications</h1>
+
+    <% for (let i = 0; i < (notifications ? notifications.length : 0); i++) { %>
+        <div>
+        <h2><%= notifications[i].message %></h2>
+        <p><%= notifications[i].post_time %></p>
+        </div>
+    <% } %>
+</body>
+</html>
