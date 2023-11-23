@@ -10,6 +10,9 @@
             <a href="/profile/<%= users[i].id %>" >
               <h2><%= users[i].username %></h2>
             </a>
+            <% if(users[i].is_admin){ %>
+              <h3 style="color: red">Admin</h3>
+            <% } %>
               <img src="/<%= users[i].path_to_avatar %>">
             <hr>
         </div>

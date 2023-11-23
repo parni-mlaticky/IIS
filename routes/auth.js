@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const userModel = require("../models/User");
 const multer = require("multer");
 const path = require("path");
+const constants = require("../constants");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -68,7 +69,7 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
     const { username, password } = req.body;
     const visibility = 0;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const picture_path = req.file.path;
+    const picture_path = req.file?.path || constants.DEFAULT_PROFILE_AVATAR_PATH;
 
     if (!username || !password) {
       return res.status(400).render("error", {
@@ -95,7 +96,9 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
       picture_path,
       hashedPassword,
       visibility,
+      false
     );
+
     await newUser.save();
     const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, {
       expiresIn: "1h",

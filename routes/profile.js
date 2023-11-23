@@ -1,10 +1,11 @@
 const express = require("express");
+const constants = require("../constants");
 const path = require("path");
 const multer = require("multer");
 const router = express.Router();
 const profileModel = require("../models/User");
 const bcrypt = require("bcrypt");
-const { authenticate, isAuthorized } = require("../middlewares/auth");
+const { authenticate, isAuthorized, checkLogin } = require("../middlewares/auth");
 module.exports = router;
 
 const storage = multer.diskStorage({
@@ -40,7 +41,7 @@ router.get("/", authenticate, async (req, res) => {
 });
 
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", checkLogin, async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
     if (!profile) {
@@ -48,6 +49,13 @@ router.get("/:id", async (req, res) => {
         .status(404)
         .render("404", { message: "Profile not found", url: req.url });
     }
+    if(profile.visibility === constants.Visibility.PRIVATE && req.userData.id !== profile.id) {
+      return res.status(403).render("profile/private_profile", {
+        message: "Profile is private",
+        status: 403,
+      });
+    }
+
     res.render("profile", { user: profile });
   } catch (err) {
     console.log(err);
@@ -84,13 +92,13 @@ router.get(
 const visibility_to_id = (visibility) => {
   switch (visibility) {
     case "public":
-      return 2;
-    case "private":
-      return 0;
+      return constants.Visibility.PUBLIC;
     case "registered":
-      return 1;
+      return constants.Visibility.REGISTERED;
+    case "private":
+      return constants.Visibility.PRIVATE;
     default:
-      return 0;
+      throw new Error("Invalid visibility");
   }
 };
 
@@ -104,15 +112,19 @@ router.put("/:id", authenticate, isAuthorized("user"), upload.single("picture"),
     }
     const form_old_password = req.body.old_password;
     const old_password_hash = profile.pwd_hash;
-    const passwords_match = !form_old_password || await bcrypt.compare(form_old_password, old_password_hash);
-    if(!passwords_match) {
+    let passwords_match = false;
+    if(form_old_password){
+      passwords_match = await bcrypt.compare(form_old_password, old_password_hash);
+    }
+    if(form_old_password && !passwords_match) {
       return res.status(400).json({ message: "Old password is incorrect" });
     }
     const new_password_hash = passwords_match ? await bcrypt.hash(req.body.new_password, 10) : profile.pwd_hash;
     new_username = req.body.username || profile.username;
     new_picture_path = req.file?.path || profile.path_to_avatar;
     new_visibility = req.body.visibility || profile.visibility;
-    const profileObj = new profileModel(req.params.id, new_username, new_picture_path, new_password_hash, visibility_to_id(new_visibility));
+    const profileObj = new profileModel(req.params.id, new_username, new_picture_path, new_password_hash,
+      visibility_to_id(new_visibility), profile.is_admin);
     await profileObj.save();
     console.log(profileObj);
     res.redirect(`/profile/${req.params.id}`);
