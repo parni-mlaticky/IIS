@@ -2,6 +2,7 @@ const express = require("express");
 
 // TODO change after folder is created for profile pictures
 const DEFAULT_PROFILE_AVATAR_PATH = "public/default_profile_pic.png";
+const DEFAULT_GROUP_AVATAR_PATH = "public/group_avatars/default_group_pic.png";
 const Visibility = {
   PRIVATE: 0,
   REGISTERED: 1,
@@ -23,6 +24,7 @@ const NotificationType = {
 
 module.exports = {
   DEFAULT_PROFILE_AVATAR_PATH,
+  DEFAULT_GROUP_AVATAR_PATH,
   Visibility,
   GroupRole,
   NotificationType,
