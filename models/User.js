@@ -1,12 +1,13 @@
 const db = require("../database");
 
 class User {
-  constructor(id, username, picture_path, password, visibility) {
+  constructor(id, username, picture_path, password, visibility, is_admin) {
     this.id = id;
     this.username = username;
     this.picture_path = picture_path;
     this.password = password;
     this.visibility = visibility;
+    this.is_admin = is_admin;
   }
 
   async save() {
@@ -15,12 +16,13 @@ class User {
         return this.update();
       }
       const result = await db.execute(
-        "INSERT INTO Registered_user (username, path_to_avatar, pwd_hash, visibility) VALUES (?, ?, ?, ?)",
+        "INSERT INTO Registered_user (username, path_to_avatar, pwd_hash, visibility, is_admin) VALUES (?, ?, ?, ?, ?)",
         [
           this.username,
           this.picture_path,
           this.password,
           this.visibility,
+          this.is_admin,
         ],
       );
       this.id = result[0].insertId;
@@ -75,13 +77,14 @@ class User {
   async update() {
     try {
       await db.execute(
-        "UPDATE Registered_user SET username = ?, path_to_avatar = ?, pwd_hash = ?, visibility = ? WHERE id = ?",
+        "UPDATE Registered_user SET username = ?, path_to_avatar = ?, pwd_hash = ?, visibility = ?, is_admin = ? WHERE id = ?",
         [
           this.username,
           this.picture_path,
           this.password,
           this.visibility,
-          this.id,
+          this.is_admin,
+          this.id
         ],
       );
       return this.id;

@@ -16,6 +16,9 @@
         <% } %>
 
         <h2>Username: <%= user.username %></h2>
+        <% if(user.is_admin) { %>
+          <h3 style="color: red">Admin</h3>
+        <% } %>
 
         <div class="profile-actions">
             <a href="/profile/<%= user.id %>/edit">Edit Profile</a>
