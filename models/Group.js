@@ -1,7 +1,8 @@
 const db = require("../database");
 
 class Group {
-  constructor(name, description, picture_path, visibility) {
+  constructor(id, name, description, picture_path, visibility) {
+    this.id = id;
     this.name = name;
     this.description = description;
     this.picture_path = picture_path;
@@ -9,6 +10,9 @@ class Group {
   }
   async save() {
     try {
+      if(this.id) {
+        return this.update();
+      }
       const [rows] = await db.query(
         "INSERT INTO `Group` (name, description, path_to_avatar, visibility) VALUES (?, ?, ?, ?)",
         [this.name, this.description, this.picture_path, this.visibility],
@@ -53,7 +57,7 @@ class Group {
   async update() {
     try {
       const [rows] = await db.query(
-        "UPDATE `Group` SET name = ?, description = ?, picture_path = ?, visibility = ? WHERE id = ?",
+        "UPDATE `Group` SET name = ?, description = ?, path_to_avatar = ?, visibility = ? WHERE id = ?",
         [
           this.name,
           this.description,

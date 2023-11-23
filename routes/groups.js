@@ -1,7 +1,15 @@
 const express = require("express");
 const router = express.Router();
 const groupModel = require("../models/Group");
-const { authenticate, isAuthorized } = require("../middlewares/auth");
+const userGroupModel = require("../models/User_Group_role");
+const userCommentVoteModel = require("../models/User_Comment_vote");
+const { groupRole, Visibility, GroupRole } = require("../constants")
+
+const {
+  authenticate,
+  isAuthorized,
+  checkLogin,
+} = require("../middlewares/auth");
 const multer = require("multer");
 const path = require("path");
 
@@ -23,7 +31,9 @@ module.exports = router;
 router.get("/", async (req, res) => {
   try {
     const groups = await groupModel.getAll();
-    res.render("groups", { groups, user: req.userData, title: "Groups" });
+    // TDOO show to members only if visibility is 1
+    const showThreadCreate = req.userData || groups[i].visibility == Visibility.PUBLIC;
+    res.render("groups", { groups, user: req.userData, title: "Groups", showThreadCreate});
   } catch (err) {
     console.log(err);
     const message = "Error retrieving groups from database";
@@ -35,11 +45,9 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.get("/:id", async (req, res) => {
+router.get("/:id", checkLogin, async (req, res) => {
   try {
     const group = await groupModel.getById(req.params.id);
-    console.log(group);
-
     if (group.length == 0) {
       res.status(404).render("404", {
         message: "Group not found",
@@ -49,11 +57,23 @@ router.get("/:id", async (req, res) => {
       return;
     }
 
+    if (!req.userData && group[0].visibility != Visibility.PUBLIC) {
+      return res.status(404).send("Group not found");
+    }
+
+    let user_can_edit = false
+    if (req.userData) {
+      const user_group = await userGroupModel.getGroupOwnershipByUserId(req.userData.id, group[0].id);
+      user_can_edit = user_group.length == 1;
+    }
+
     res.render("groups/detail", {
-      group,
-      userDataCookie: req.userData,
+      group: group[0],
+      user: req.userData,
       title: group[0].name,
+      user_can_edit,
     });
+
   } catch (err) {
     console.log(err);
     const message = "Error retrieving group from database";
@@ -139,6 +159,7 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
     }
 
     const newGroup = new groupModel(
+      null,
       req.body.name,
       req.body.description,
       req.file.path,
@@ -146,6 +167,13 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
     );
 
     const newGroupID = await newGroup.save();
+    const newUserGroupRole = new userGroupModel (
+      null,
+      `${req.userData.id}`,
+      newGroupID,
+      GroupRole.OWNER ,
+    );
+    console.log(await newUserGroupRole.save());
     res.redirect(`/groups/${newGroupID}`);
   } catch (err) {
     console.log(err);
@@ -158,7 +186,7 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
   }
 });
 
-router.put("/:id", authenticate, isAuthorized("group"), async (req, res) => {
+router.put("/:id", authenticate, checkLogin, isAuthorized("group"), upload.single("avatar"), async (req, res) => {
   try {
     const group = await groupModel.getById(req.params.id);
     if (!group) {
@@ -169,11 +197,31 @@ router.put("/:id", authenticate, isAuthorized("group"), async (req, res) => {
         title: `${404} ${message}`,
       });
     }
-    group.name = req.body.name;
-    group.description = req.body.description;
-    group.picture_path = req.body.picture_path;
-    group.visibility = req.body.visibility;
-    await group.update();
+
+    // Hide non-public groups from unlogged-in users.
+    if (!req.userData && group[0].visibility != Visibility.PUBLIC) {
+      return res.status(404).send("Group not found");
+    }
+
+    const sameName = await groupModel.getByName(req.body.name);
+    if (sameName.length != 0) {
+      return res.status(500).send("Group with this name already exists");
+    }
+
+    group[0].name = req.body.name || group[0].name;
+    group[0].description = req.body.description || group[0].description;
+    group[0].path_to_avatar = req.file ? req.file.path : group[0].path_to_avatar;
+    group[0].visibility = req.body.visibility || group[0].visibility;
+
+    const updatedGroup = new groupModel(
+      req.params.id,
+      group[0].name,
+      group[0].description,
+      group[0].path_to_avatar,
+      group[0].visibility,
+    );
+    await updatedGroup.save();
+
     res.redirect(`/groups/${req.params.id}`);
   } catch (err) {
     console.log(err);
