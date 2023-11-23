@@ -80,7 +80,7 @@ router.get("/:userid", async (req, res) => {
         title: `404`,
       });
     }
-    res.render("groups", { groups });
+    res.render("groups", { groups, title: "Groups" });
   } catch (err) {
     console.log(err);
     const message = "Error retrieving groups from database";
@@ -103,7 +103,7 @@ router.get("/:name", async (req, res) => {
         title: `${404} ${message}`,
       });
     }
-    res.render("groups", { groups });
+    res.render("groups", { groups, title: "Groups" });
   } catch (err) {
     console.log(err);
     const message = "Error retrieving groups from database";
