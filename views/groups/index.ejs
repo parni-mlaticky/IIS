@@ -19,14 +19,13 @@
       </form>
     <% } %>
 
-    <% for (let i = 0; i < (groups ? groups.length : 0); i++) { %>
-        <% if (!showThreadCreate) { continue; } %>
+    <% for (let i = 0; i < groups.length; i++) { %>
         <div>
             <a href="/groups/<%= groups[i].id %>" >
-              <h2><%= groups[i].name %></h2>
+            <h2><%= groups[i].name %></h2>
             </a>
-              <p><%= groups[i].description %></p>
-              <img src="/<%= groups[i].path_to_avatar %>">
+            <p><%= groups[i].description %></p>
+            <img src="/<%= groups[i].path_to_avatar %>">
             <hr>
         </div>
     <% } %>

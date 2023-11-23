@@ -33,6 +33,18 @@ class Group {
     }
   }
 
+  static async getAllWithVisibility(visibility) {
+    try {
+      const [rows] = await db.query(
+        "SELECT * FROM `Group` WHERE visibility = ?",
+        [visibility],
+      );
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   static async getByName(name) {
     try {
       const [rows] = await db.query("SELECT * FROM `Group` WHERE name = ?", 

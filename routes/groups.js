@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const groupModel = require("../models/Group");
+const userModel = require("../models/User");
 const userGroupModel = require("../models/User_Group_role");
 const userCommentVoteModel = require("../models/User_Comment_vote");
 const NotificationModel = require("../models/Notification");
 const {
-  groupRole,
   Visibility,
   GroupRole,
   NotificationType,
@@ -37,16 +37,15 @@ module.exports = router;
 
 router.get("/", async (req, res) => {
   try {
-    const groups = await groupModel.getAll();
+    let groups;
+    if (!req.userData) {
+      groups = await groupModel.getAllWithVisibility(Visibility.PUBLIC);
+    }
+    else {
+      groups = await groupModel.getAll();
+    }
     // TDOO show to members only if visibility is 1
-    const showThreadCreate =
-      req.userData || groups[i].visibility == Visibility.PUBLIC;
-    res.render("groups", {
-      groups,
-      user: req.userData,
-      title: "Groups",
-      showThreadCreate,
-    });
+    res.render("groups", { groups, user: req.userData, title: "Groups" });
   } catch (err) {
     console.log(err);
     const message = "Error retrieving groups from database";
@@ -91,14 +90,14 @@ router.get("/:id", checkLogin, async (req, res) => {
 
     groupMembers.forEach((member) => {
       switch (member.role) {
-        case groupRole.OWNER:
-          ownerUser = UserModel.getById(member.user_id);
+        case GroupRole.OWNER:
+          ownerUser = userModel.getById(member.user_id);
           break;
-        case groupRole.MODERATOR:
-          moderatorUsers.push(UserModel.getById(member.user_id));
+        case GroupRole.MODERATOR:
+          moderatorUsers.push(userModel.getById(member.user_id));
           break;
-        case groupRole.MEMBER:
-          members.push(UserModel.getById(member.user_id));
+        case GroupRole.MEMBER:
+          members.push(userModel.getById(member.user_id));
           break;
       }
     });
