@@ -19,6 +19,7 @@ const checkLogin = (req, res, next) => {
   } catch (err) {
     req.isLogged = false;
   }
+  res.locals.isLogged = req.isLogged;
   next();
 };
 
@@ -58,11 +59,13 @@ function isAuthorized(entityType) {
           ownerUserId = comment.user_id;
           break;
         case "group":
-          const user_group = await userGroupModel.getGroupOwnershipByUserId(userId, resourceId);
+          const user_group = await userGroupModel.getGroupOwnershipByUserId(
+            userId,
+            resourceId,
+          );
           if (user_group.length == 1) {
             ownerUserId = user_group[0].user_id;
-          }
-          else {
+          } else {
             ownerUserId = null;
           }
           break;
