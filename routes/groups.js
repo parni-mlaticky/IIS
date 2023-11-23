@@ -27,12 +27,13 @@ module.exports = router;
 router.get("/", checkLogin, async (req, res) => {
   try {
     const groups = await groupModel.getAll();
-    res.render("groups", { groups, user: req.userData });
+    res.render("groups", { groups, user: req.userData, title: "Groups" });
   } catch (err) {
     console.log(err);
     res.status(500).render("error", {
       message: "Error retrieving groups from database",
       status: 500,
+      title: `$(status) $(message)`,
     });
   }
 });
@@ -43,18 +44,22 @@ router.get("/:id", async (req, res) => {
     console.log(group);
 
     if (group.length == 0) {
-      res
-        .status(404)
-        .render("404", { message: "Group not found", url: req.url });
+      res.status(404).render("404", {
+        message: "Group not found",
+        url: req.url,
+        title: `$(message`,
+      });
       return;
     }
 
     res.render("groups/detail", { group, userDataCookie: req.userData });
   } catch (err) {
     console.log(err);
-    res
-      .status(500)
-      .render("error", { message: "Error retrieving group from database" });
+    res.status(500).render("error", {
+      message: "Error retrieving group from database",
+      status: 500,
+      title: `$(status) $(message)`,
+    });
   }
 });
 
@@ -62,9 +67,11 @@ router.get("/:userid", async (req, res) => {
   try {
     const groups = await groupModel.getByUserId(req.params.userid);
     if (!groups) {
-      return res
-        .status(404)
-        .render("404", { message: "Groups not found", url: req.url });
+      return res.status(404).render("404", {
+        message: "Groups not found",
+        url: req.url,
+        title: `$(message`,
+      });
     }
     res.render("groups", { groups });
   } catch (err) {
@@ -72,6 +79,7 @@ router.get("/:userid", async (req, res) => {
     res.status(500).render("error", {
       message: "Error retrieving groups from database",
       status: 500,
+      title: `$(status) $(message)`,
     });
   }
 });
@@ -82,17 +90,20 @@ router.get("/:name", async (req, res) => {
     if (!groups) {
       return res
         .status(404)
-        .render("404", { message: "Groups not found", url: req.url });
+        .render("404", {
+          message: "Groups not found",
+          url: req.url,
+          title: `$(message`,
+        });
     }
     res.render("groups", { groups });
   } catch (err) {
     console.log(err);
-    res
-      .status(500)
-      .render("error", {
-        message: "Error retrieving groups from database",
-        status: 500,
-      });
+    res.status(500).render("error", {
+      message: "Error retrieving groups from database",
+      status: 500,
+      title: `$(status) $(message)`,
+    });
   }
 });
 
@@ -103,7 +114,11 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
     if (existing.length != 0) {
       return res
         .status(409)
-        .render({ message: "Group already exists", status: 409 });
+        .render({
+          message: "Group already exists",
+          status: 409,
+          title: `$(status) $(message)`,
+        });
     }
 
     if (
@@ -112,12 +127,11 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
       !req.body.visibility ||
       !req.file.path
     ) {
-      return res
-        .status(500)
-        .render("error", {
-          message: "All form fileds must be filled",
-          status: 500,
-        });
+      return res.status(500).render("error", {
+        message: "All form fileds must be filled",
+        status: 500,
+        title: `$(status) $(message)`,
+      });
     }
 
     const newGroup = new groupModel(
@@ -133,7 +147,11 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
     console.log(err);
     res
       .status(500)
-      .render("error", { message: "Error creating group", status: 500 });
+      .render("error", {
+        message: "Error creating group",
+        status: 500,
+        title: `$(status) $(message)`,
+      });
   }
 });
 
@@ -143,7 +161,11 @@ router.put("/:id", authenticate, isAuthorized("group"), async (req, res) => {
     if (!group) {
       return res
         .status(404)
-        .render("404", { message: "Group not found", url: req.url });
+        .render("404", {
+          message: "Group not found",
+          url: req.url,
+          title: `$(message`,
+        });
     }
     group.name = req.body.name;
     group.description = req.body.description;
@@ -155,7 +177,11 @@ router.put("/:id", authenticate, isAuthorized("group"), async (req, res) => {
     console.log(err);
     res
       .status(500)
-      .render("error", { message: "Error updating group", status: 500 });
+      .render("error", {
+        message: "Error updating group",
+        status: 500,
+        title: `$(status) $(message)`,
+      });
   }
 });
 
@@ -165,7 +191,11 @@ router.delete("/:id", authenticate, isAuthorized("group"), async (req, res) => {
     if (!group) {
       return res
         .status(404)
-        .render("404", { message: "Group not found", url: req.url });
+        .render("404", {
+          message: "Group not found",
+          url: req.url,
+          title: `$(message`,
+        });
     }
     await group.delete();
     res.redirect("/groups");
@@ -173,6 +203,10 @@ router.delete("/:id", authenticate, isAuthorized("group"), async (req, res) => {
     console.log(err);
     res
       .status(500)
-      .render("error", { message: "Error deleting group", status: 500 });
+      .render("error", {
+        message: "Error deleting group",
+        status: 500,
+        title: `$(status) $(message)`,
+      });
   }
 });

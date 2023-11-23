@@ -13,7 +13,11 @@ router.get("/:groupid", async (req, res) => {
     if (!threads) {
       return res
         .status(404)
-        .render("404", { message: "Threads not found", url: req.url });
+        .render("404", {
+          message: "Threads not found",
+          url: req.url,
+          title: "404",
+        });
     }
     res.render("threads", { threads });
   } catch (err) {
@@ -21,6 +25,7 @@ router.get("/:groupid", async (req, res) => {
     res.status(500).render("error", {
       message: "Error retrieving threads from database",
       status: 500,
+      title: `$(status) $(message)`,
     });
   }
 });
@@ -30,7 +35,11 @@ router.post("/", authenticate, async (req, res) => {
     if (await threadModel.getByName(req.body.title)) {
       return res
         .status(409)
-        .render("error", { message: "Thread already exists", status: 409 });
+        .render("error", {
+          message: "Thread already exists",
+          status: 409,
+          title: `$(status) $(message)`,
+        });
     }
     const newThread = new threadModel(
       null,
@@ -47,6 +56,7 @@ router.post("/", authenticate, async (req, res) => {
     res.status(500).render("error", {
       message: "Error creating thread",
       status: 500,
+      title: `$(status) $(message)`,
     });
   }
 });
@@ -57,7 +67,11 @@ router.put("/:id", authenticate, isAuthorized("thread"), async (req, res) => {
     if (!thread) {
       return res
         .status(404)
-        .render("404", { message: "Thread not found", url: req.url });
+        .render("404", {
+          message: "Thread not found",
+          url: req.url,
+          title: "404",
+        });
     }
     thread.title = req.body.title;
     thread.content = req.body.content;
@@ -69,7 +83,11 @@ router.put("/:id", authenticate, isAuthorized("thread"), async (req, res) => {
     console.log(err);
     res
       .status(500)
-      .render("error", { message: "Error updating thread", status: 500 });
+      .render("error", {
+        message: "Error updating thread",
+        status: 500,
+        title: `$(status) $(message)`,
+      });
   }
 });
 
@@ -83,7 +101,11 @@ router.delete(
       if (!thread) {
         return res
           .status(404)
-          .render("404", { message: "Thread not found", url: req.url });
+          .render("404", {
+            message: "Thread not found",
+            url: req.url,
+            title: "404",
+          });
       }
       await thread.delete();
       res.redirect(`/groups/${thread.group_id}`);
@@ -92,6 +114,7 @@ router.delete(
       res.status(500).render("error", {
         message: "Error deleting thread",
         status: 500,
+        title: `$(status) $(message)`,
       });
     }
   },
@@ -113,7 +136,11 @@ router.post("/:id/comments", authenticate, async (req, res) => {
     console.log(err);
     res
       .status(500)
-      .render("error", { message: "Error creating comment", status: 500 });
+      .render("error", {
+        message: "Error creating comment",
+        status: 500,
+        title: `$(status) $(message)`,
+      });
   }
 });
 
@@ -127,7 +154,11 @@ router.put(
       if (!comment) {
         return res
           .status(404)
-          .render("404", { message: "Comment not found", url: req.url });
+          .render("404", {
+            message: "Comment not found",
+            url: req.url,
+            title: "404",
+          });
       }
       comment.content = req.body.content;
       await comment.save();
@@ -136,7 +167,11 @@ router.put(
       console.log(err);
       res
         .status(500)
-        .render("error", { message: "Error updating comment", status: 500 });
+        .render("error", {
+          message: "Error updating comment",
+          status: 500,
+          title: `$(status) $(message)`,
+        });
     }
   },
 );
@@ -151,7 +186,11 @@ router.delete(
       if (!comment) {
         return res
           .status(404)
-          .render("404", { message: "Comment not found", url: req.url });
+          .render("404", {
+            message: "Comment not found",
+            url: req.url,
+            title: "404",
+          });
       }
       await comment.delete();
       res.redirect(`/threads/${req.params.id}`);
@@ -159,7 +198,11 @@ router.delete(
       console.log(err);
       res
         .status(500)
-        .render("error", { message: "Error deleting comment", status: 500 });
+        .render("error", {
+          message: "Error deleting comment",
+          status: 500,
+          title: `$(status) $(message)`,
+        });
     }
   },
 );
@@ -181,7 +224,11 @@ router.post(
       console.log(err);
       res
         .status(500)
-        .render("error", { message: "Error creating vote", status: 500 });
+        .render("error", {
+          message: "Error creating vote",
+          status: 500,
+          title: `$(status) $(message)`,
+        });
     }
   },
 );
@@ -196,7 +243,11 @@ router.put(
       if (!vote) {
         return res
           .status(404)
-          .render("404", { message: "Vote not found", url: req.url });
+          .render("404", {
+            message: "Vote not found",
+            url: req.url,
+            title: "404",
+          });
       }
       vote.vote = req.body.vote;
       await vote.save();
@@ -205,7 +256,11 @@ router.put(
       console.log(err);
       res
         .status(500)
-        .render("error", { message: "Error updating vote", status: 500 });
+        .render("error", {
+          message: "Error updating vote",
+          status: 500,
+          title: `$(status) $(message)`,
+        });
     }
   },
 );

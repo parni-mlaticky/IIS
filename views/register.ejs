@@ -1,10 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Register page</title>
-</head>
-<body>
-  <h1>Register</h1>
+    <%- include('partials/navbar') %>
+<h1>Register</h1>
   <form action="/auth/register" method="post", enctype="multipart/form-data">
     <input type="text" name="username" placeholder="username" /> <br>
     <label for="avatar">Avatar</label>
