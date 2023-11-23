@@ -38,7 +38,7 @@ router.post("/", authenticate, async (req, res) => {
       req.body.content,
       req.body.picture_path,
       req.body.group_id,
-      req.userData.userId,
+      req.userData.id,
     );
     const newThreadId = await newThread.save();
     res.redirect(`/threads/${newThreadId}`);
@@ -102,7 +102,7 @@ router.post("/:id/comments", authenticate, async (req, res) => {
     const newComment = new commentModel(
       null,
       req.params.id,
-      req.userData.userId,
+      req.userData.id,
       req.body.content,
       new Date(),
       new Date(),
@@ -171,7 +171,7 @@ router.post(
     try {
       const newVote = new userCommentVoteModel(
         null,
-        req.userData.userId,
+        req.userData.id,
         req.params.commentsid,
         req.body.vote,
       );

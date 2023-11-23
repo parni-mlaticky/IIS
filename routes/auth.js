@@ -40,7 +40,7 @@ router.post("/login", async (req, res) => {
 
     if (user && (await bcrypt.compare(password, user.pwd_hash))) {
       const payload = {
-        userId: user.id,
+        id: user.id,
         username: user.username,
       };
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
@@ -50,7 +50,7 @@ router.post("/login", async (req, res) => {
       res.cookie("token", token, { httpOnly: true, maxAge: 3600000 });
       res.status(200).redirect("/");
     } else {
-      res.status(401).render("erorr", {
+      res.status(401).render("error", {
         message: "Invalid username or password",
         status: 401,
       });
@@ -76,7 +76,7 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
         status: 400,
       });
     }
-
+9
     if (req.cookies.token) {
       return res
         .status(400)
@@ -113,4 +113,9 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
 router.post("/logout", (req, res) => {
   res.clearCookie("token");
   res.redirect("/");
+});
+
+router.get("/logout", (req, res) => {
+  res.clearCookie("token");
+  res.json({ message: "User logged out successfully" });
 });

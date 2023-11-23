@@ -47,7 +47,7 @@ const isAdmin = (req, res, next) => {
 function isAuthorized(entityType) {
   return async (req, res, next) => {
     try {
-      const userId = req.userData.userId;
+      const userId = req.userData.id;
       const resourceId = req.params.id;
       let ownerUserId;
 

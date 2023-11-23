@@ -1,36 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
+    <script>
+      const get_visibility = (visibility) => {
+        switch(visibility) {
+          case 0:
+            return "Private";
+          case 1:
+            return "Registered users";
+          case 2:
+            return "Public";
+        }
+      }
+    </script>
 </head>
 <body>
     <h1>Edit Profile</h1>
 
-    <form action="/profile/update" method="post">
+    <form action="/profile/<%=user.id%>/?_method=PUT" method="post" id="form", enctype="multipart/form-data">
 
     <input type="hidden" name="_method" value="PUT"> 
         
         <div>
-            <label for="username">Username:</label>
+            <label for="username">Change username:</label>
             <input type="text" id="username" name="username" value="<%= user.username %>" required>
         </div>
 
         <div>
-            <label for="username">Password:</label>
-            <input type="password" id="password" name="password" value="" required>
+            <h2>Change password:</h2>
+            <label for="old_password">Old password</label>
+            <input type="password" id="old_password" name="old_password" value="">
+            <label for="new_password">New password</label>
+            <input type="password" id="new_password" name="new_password" value="">
         </div>
 
         <div>
-            <label for="picture_path">Picture URL:</label>
-            <input type="text" id="picture_path" name="picture_path" value="<%= user.picture_path %>">
+            <label for="picture">Change profile picture</label>
+            <input type="file" id="picture" name="picture" value="/<%= user.path_to_avatar %>">
         </div>
 
+
+        <div>
+          <h2>Profile visibility</h2>
+          <select id="visibility" name="visibility">
+            <option value="private" <%= user.visibility === 0 ? 'selected' : '' %>>Private</option>
+            <option value="registered" <%= user.visibility === 1 ? 'selected' : '' %>>Registered users</option>
+            <option value="public" <%= user.visibility === 2 ? 'selected' : '' %>>Public</option>
+          </select>
+        </div>
 
         <button type="submit">Update Profile</button>
     </form>
 
     <a href="/profile/<%= user.id %>">Cancel</a>
+
+    <script>
+      form.addEventListener('submit', (e) => {
+        const old_password = document.getElementById('old_password').value;
+        const new_password = document.getElementById('new_password').value;
+        console.log(old_password, new_password);
+        if((old_password !== "" && new_password !== "") && (old_password === new_password)) {
+          alert('New password cannot be the same as old password.');
+          e.preventDefault();
+          return;
+        }
+        if(new_password && !old_password) {
+          alert('Please enter old password if you want to change the password.');
+          e.preventDefault();
+          return;
+        }
+        if(!new_password && old_password) {
+          alert('Please enter new password if you want to change the password.');
+          e.preventDefault();
+          return;
+        }
+        e.target.submit();
+      });
+    </script>
 </body>
 </html>
+
+

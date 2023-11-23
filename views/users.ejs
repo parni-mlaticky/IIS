@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Users</title>
+</head>
+<body>
+  <h1>Users</h1>
+    <% for (let i = 0; i < (users ? users.length : 0); i++) { %>
+        <div>
+            <a href="/profile/<%= users[i].id %>" >
+              <h2><%= users[i].username %></h2>
+            </a>
+              <img src="/<%= users[i].path_to_avatar %>">
+            <hr>
+        </div>
+    <% } %>
+</body>
+</html>
+
