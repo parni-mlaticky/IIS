@@ -1,11 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const groupModel = require("../models/Group");
-const {
-  authenticate,
-  isAuthorized,
-  checkLogin,
-} = require("../middlewares/auth");
+const { authenticate, isAuthorized } = require("../middlewares/auth");
 const multer = require("multer");
 const path = require("path");
 
@@ -24,7 +20,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 module.exports = router;
 
-router.get("/", checkLogin, async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const groups = await groupModel.getAll();
     res.render("groups", { groups, user: req.userData, title: "Groups" });

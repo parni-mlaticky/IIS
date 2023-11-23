@@ -5,6 +5,7 @@ const app = express();
 const routes = require("./routes");
 const multer = require("multer");
 const methodOverride = require("method-override");
+const { checkLogin } = require("./middlewares/auth");
 
 require("dotenv").config();
 
@@ -14,6 +15,7 @@ app.use("/public", express.static(__dirname + "/public"));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(methodOverride("_method"));
+app.use(checkLogin);
 
 app.use("/", routes);
 

@@ -5,11 +5,7 @@ const multer = require("multer");
 const router = express.Router();
 const profileModel = require("../models/User");
 const bcrypt = require("bcrypt");
-const {
-  authenticate,
-  isAuthorized,
-  checkLogin,
-} = require("../middlewares/auth");
+const { authenticate, isAuthorized } = require("../middlewares/auth");
 module.exports = router;
 
 const storage = multer.diskStorage({
@@ -48,7 +44,7 @@ router.get("/", authenticate, async (req, res) => {
   }
 });
 
-router.get("/:id", checkLogin, async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
     if (!profile) {
