@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken");
 const commentModel = require("../models/Comment");
-const groupModel = require("../models/Group");
+const userGroupModel = require("../models/User_Group_role");
 const threadModel = require("../models/Thread");
 const userModel = require("../models/User");
 const userCommentVoteModel = require("../models/User_Comment_vote");
@@ -58,8 +58,13 @@ function isAuthorized(entityType) {
           ownerUserId = comment.user_id;
           break;
         case "group":
-          const group = await groupModel.getById(resourceId);
-          ownerUserId = group.user_id;
+          const user_group = await userGroupModel.getGroupOwnershipByUserId(userId, resourceId);
+          if (user_group.length == 1) {
+            ownerUserId = user_group[0].user_id;
+          }
+          else {
+            ownerUserId = null;
+          }
           break;
         case "thread":
           const thread = await threadModel.getById(resourceId);

@@ -2,7 +2,7 @@ const db = require("../database");
 
 class User_Group_role {
   constructor(id, user_id, group_id, role) {
-    this.id = id;
+    this.id = id,
     this.user_id = user_id;
     this.group_id = group_id;
     this.role = role;
@@ -10,6 +10,9 @@ class User_Group_role {
 
   async save() {
     try {
+      if (this.id) {
+        return this.update();
+      }
       const [rows] = await db.execute(
         "INSERT INTO User_Group_role (user_id, group_id, role) VALUES (?, ?, ?)",
         [this.user_id, this.group_id, this.role],
@@ -31,6 +34,19 @@ class User_Group_role {
       console.log(err);
     }
   }
+
+  static async getGroupOwnershipByUserId(user_id, group_id) {
+    try {
+      const [rows] = await db.execute(
+        "SELECT * FROM User_Group_role WHERE user_id = ? and group_id = ? and role = 2",
+        [user_id, group_id],
+      );
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
 
   static async getAll() {
     try {

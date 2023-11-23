@@ -1,9 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= group.name %> Group</title>
 
+</head>
+<body>
     <%- include('../partials/navbar') %>
-
-  <h1><%= group[0].name %></h1>
-  <p><%= group[0].description %></p>
-  <hr>
-
+  <div>
+    <h1><%= group.name %></h1>
+    <p><%= group.description %></p>
+    <img src="/<%= group.path_to_avatar%>">
+    <% if (user_can_edit) { %>
+      <h2>Edit group</h2>
+      <form action="/groups/<%= group.id %>/?_method=PUT" method="post", if="form" enctype="multipart/form-data">
+        <p><i>Empty fields will be ignored.</i></p>
+        <input type="hidden" name="_method" value="PUT">
+        <label for="name">New name: </label>
+        <input type="text" name="name" placeholder="<%= group.name %>" /> <br>
+        <label for="text">New description: </label>
+        <input type="text" name="description" placeholder="<%= group.description %>" /> <br>
+        <label for="avatar">New avatar: </label>
+        <input type="file" name="avatar" placeholder="avatar"/> <br>
+        <label for="visibility">New visibility</label>
+        <select name="visibility" id="visibility">
+          <option value="2" <%= group.visibility == 2 ? "selected" : "" %>>Public</option>
+          <option value="1" <%= group.visibility == 1 ? "selected" : "" %>>Priate</option>
+          <option value="0" <%= group.visibility == 0 ? "selected" : "" %>>Invite only</option>
+        </select>
+        <input type="submit" value="Create group" /> <br>
+      </form>
+      <hr>
+    <% } %>
+    <hr>
+    <% if (user) { %>
+      <h2>Create Thread</h2>
+      <form action="/thread/<%= group.id %>" method="post", enctype="multipart/form-data">
+        <label for="name">Title: </label>
+        <input type="text" name="name" placeholder="Title" /> <br>
+        <label for="text">Text: </label>
+        <input type="text" name="text" placeholder="Text" /> <br>
+        <input type="submit" value="Create group" /> <br>
+      </form>
+      <hr>
+    <% } %>
+  </div>
 </body>
 </html>
