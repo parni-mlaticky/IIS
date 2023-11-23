@@ -11,21 +11,20 @@ router.get("/:groupid", async (req, res) => {
   try {
     const threads = await threadModel.getAllByGroupId(req.params.groupid);
     if (!threads) {
-      return res
-        .status(404)
-        .render("404", {
-          message: "Threads not found",
-          url: req.url,
-          title: "404",
-        });
+      return res.status(404).render("404", {
+        message: "Threads not found",
+        url: req.url,
+        title: "404",
+      });
     }
     res.render("threads", { threads });
   } catch (err) {
     console.log(err);
+    const message = "Error retrieving threads from database";
     res.status(500).render("error", {
-      message: "Error retrieving threads from database",
+      message: message,
       status: 500,
-      title: `$(status) $(message)`,
+      title: `${500} ${message}`,
     });
   }
 });
@@ -33,13 +32,12 @@ router.get("/:groupid", async (req, res) => {
 router.post("/", authenticate, async (req, res) => {
   try {
     if (await threadModel.getByName(req.body.title)) {
-      return res
-        .status(409)
-        .render("error", {
-          message: "Thread already exists",
-          status: 409,
-          title: `$(status) $(message)`,
-        });
+      const message = "Thread already exists";
+      return res.status(409).render("error", {
+        message: message,
+        status: 409,
+        title: `${409} ${message}`,
+      });
     }
     const newThread = new threadModel(
       null,
@@ -53,10 +51,11 @@ router.post("/", authenticate, async (req, res) => {
     res.redirect(`/threads/${newThreadId}`);
   } catch (err) {
     console.log(err);
+    const message = "Error creating thread";
     res.status(500).render("error", {
-      message: "Error creating thread",
+      message: message,
       status: 500,
-      title: `$(status) $(message)`,
+      title: `${500} ${message}`,
     });
   }
 });
@@ -65,13 +64,11 @@ router.put("/:id", authenticate, isAuthorized("thread"), async (req, res) => {
   try {
     const thread = await threadModel.getById(req.params.id);
     if (!thread) {
-      return res
-        .status(404)
-        .render("404", {
-          message: "Thread not found",
-          url: req.url,
-          title: "404",
-        });
+      return res.status(404).render("404", {
+        message: "Thread not found",
+        url: req.url,
+        title: "404",
+      });
     }
     thread.title = req.body.title;
     thread.content = req.body.content;
@@ -81,13 +78,12 @@ router.put("/:id", authenticate, isAuthorized("thread"), async (req, res) => {
     res.redirect(`/threads/${req.params.id}`);
   } catch (err) {
     console.log(err);
-    res
-      .status(500)
-      .render("error", {
-        message: "Error updating thread",
-        status: 500,
-        title: `$(status) $(message)`,
-      });
+    message = "Error updating thread";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
   }
 });
 
@@ -99,22 +95,21 @@ router.delete(
     try {
       const thread = await threadModel.getById(req.params.id);
       if (!thread) {
-        return res
-          .status(404)
-          .render("404", {
-            message: "Thread not found",
-            url: req.url,
-            title: "404",
-          });
+        return res.status(404).render("404", {
+          message: "Thread not found",
+          url: req.url,
+          title: "404",
+        });
       }
       await thread.delete();
       res.redirect(`/groups/${thread.group_id}`);
     } catch (err) {
       console.log(err);
+      const message = "Error deleting thread";
       res.status(500).render("error", {
-        message: "Error deleting thread",
+        message: message,
         status: 500,
-        title: `$(status) $(message)`,
+        title: `${500} ${message}`,
       });
     }
   },
@@ -134,13 +129,12 @@ router.post("/:id/comments", authenticate, async (req, res) => {
     res.redirect(`/threads/${req.params.id}`);
   } catch (err) {
     console.log(err);
-    res
-      .status(500)
-      .render("error", {
-        message: "Error creating comment",
-        status: 500,
-        title: `$(status) $(message)`,
-      });
+    const message = "Error creating comment";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
   }
 });
 
@@ -152,26 +146,23 @@ router.put(
     try {
       const comment = await commentModel.getById(req.params.commentsid);
       if (!comment) {
-        return res
-          .status(404)
-          .render("404", {
-            message: "Comment not found",
-            url: req.url,
-            title: "404",
-          });
+        return res.status(404).render("404", {
+          message: "Comment not found",
+          url: req.url,
+          title: "404",
+        });
       }
       comment.content = req.body.content;
       await comment.save();
       res.redirect(`/threads/${req.params.id}`);
     } catch (err) {
       console.log(err);
-      res
-        .status(500)
-        .render("error", {
-          message: "Error updating comment",
-          status: 500,
-          title: `$(status) $(message)`,
-        });
+      const message = "Error updating comment";
+      res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
+      });
     }
   },
 );
@@ -184,25 +175,22 @@ router.delete(
     try {
       const comment = await commentModel.getById(req.params.commentsid);
       if (!comment) {
-        return res
-          .status(404)
-          .render("404", {
-            message: "Comment not found",
-            url: req.url,
-            title: "404",
-          });
+        return res.status(404).render("404", {
+          message: "Comment not found",
+          url: req.url,
+          title: "404",
+        });
       }
       await comment.delete();
       res.redirect(`/threads/${req.params.id}`);
     } catch (err) {
       console.log(err);
-      res
-        .status(500)
-        .render("error", {
-          message: "Error deleting comment",
-          status: 500,
-          title: `$(status) $(message)`,
-        });
+      const message = "Error deleting comment";
+      res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
+      });
     }
   },
 );
@@ -222,13 +210,12 @@ router.post(
       res.redirect(`/threads/${req.params.id}`);
     } catch (err) {
       console.log(err);
-      res
-        .status(500)
-        .render("error", {
-          message: "Error creating vote",
-          status: 500,
-          title: `$(status) $(message)`,
-        });
+      const message = "Error creating vote";
+      res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
+      });
     }
   },
 );
@@ -241,26 +228,23 @@ router.put(
     try {
       const vote = await userCommentVoteModel.getById(req.params.commentsid);
       if (!vote) {
-        return res
-          .status(404)
-          .render("404", {
-            message: "Vote not found",
-            url: req.url,
-            title: "404",
-          });
+        return res.status(404).render("404", {
+          message: "Vote not found",
+          url: req.url,
+          title: "404",
+        });
       }
       vote.vote = req.body.vote;
       await vote.save();
       res.redirect(`/threads/${req.params.id}`);
     } catch (err) {
       console.log(err);
-      res
-        .status(500)
-        .render("error", {
-          message: "Error updating vote",
-          status: 500,
-          title: `$(status) $(message)`,
-        });
+      const message = "Error updating vote";
+      res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
+      });
     }
   },
 );

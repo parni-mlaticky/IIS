@@ -26,17 +26,19 @@ module.exports = router;
 router.post("/login", async (req, res) => {
   try {
     if (!req.body.username || !req.body.password) {
+      const message = "username or password missing";
       return res.status(400).render("error", {
-        message: "username or password missing",
+        message: message,
         status: 400,
-        title: `$(status) $(message)`,
+        title: `${400} ${message}`,
       });
     }
     if (req.cookies.token) {
+      const message = "User already logged in";
       return res.status(400).render("error", {
-        message: "User already logged in",
+        message: message,
         status: 400,
-        title: `$(status) $(message)`,
+        title: `${400} ${message}`,
       });
     }
     const { username, password } = req.body;
@@ -54,21 +56,21 @@ router.post("/login", async (req, res) => {
       res.cookie("token", token, { httpOnly: true, maxAge: 3600000 });
       res.status(200).redirect("/");
     } else {
+      const message = "Invalid username or password";
       res.status(401).render("error", {
-        message: "Invalid username or password",
+        message: message,
         status: 401,
-        title: `$(status) $(message)`,
+        title: `${401} ${message}`,
       });
     }
   } catch (err) {
     console.log(err);
-    res
-      .status(500)
-      .render("error", {
-        message: "Error logging in",
-        status: 500,
-        title: `$(status) $(message)`,
-      });
+    const message = "Error logging in";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
   }
 });
 
@@ -81,31 +83,30 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
       req.file?.path || constants.DEFAULT_PROFILE_AVATAR_PATH;
 
     if (!username || !password) {
+      const message = "Username or password missing";
       return res.status(400).render("error", {
-        message: "Username or password missing",
+        message: message,
         status: 400,
-        title: `$(status) $(message)`,
+        title: `${400} ${message}`,
       });
     }
     9;
     if (req.cookies.token) {
-      return res
-        .status(400)
-        .render("error", {
-          message: "User already logged in",
-          status: 400,
-          title: `$(status) $(message)`,
-        });
+      const message = "User already logged in";
+      return res.status(400).render("error", {
+        message: message,
+        status: 400,
+        title: `${400} ${message}`,
+      });
     }
 
     if (await userModel.getByUsername(username)) {
-      return res
-        .status(409)
-        .render("error", {
-          message: "Username already exists",
-          status: 409,
-          title: `$(status) $(message)`,
-        });
+      const message = "Username already exists";
+      return res.status(409).render("error", {
+        message: message,
+        status: 409,
+        title: `${409} ${message},`,
+      });
     }
 
     const newUser = new userModel(
@@ -125,13 +126,12 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
     res.status(201).redirect("/");
   } catch (err) {
     console.log(err);
-    res
-      .status(500)
-      .render("error", {
-        message: "Internal Server Error",
-        status: 500,
-        title: `$(status) $(message)`,
-      });
+    const message = "Error registering user";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
   }
 });
 

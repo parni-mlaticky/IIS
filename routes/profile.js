@@ -39,10 +39,11 @@ router.get("/", authenticate, async (req, res) => {
     res.redirect(`/profile/${profileId}`);
   } catch (err) {
     console.log(err);
+    const message = "Error retrieving profile from database";
     res.status(500).render("error", {
-      message: "Error retrieving profile from database",
+      message: message,
       status: 500,
-      title: `$(status) $(message)`,
+      title: `${500} ${message}`,
     });
   }
 });
@@ -61,20 +62,22 @@ router.get("/:id", checkLogin, async (req, res) => {
       profile.visibility === constants.Visibility.PRIVATE &&
       req.userData.id !== profile.id
     ) {
+      const message = "Profile is private";
       return res.status(403).render("profile/private_profile", {
-        message: "Profile is private",
+        message: message,
         status: 403,
-        title: `$(status) $(message)`,
+        title: `${403} ${message}`,
       });
     }
 
     res.render("profile", { user: profile, title: "Profile" });
   } catch (err) {
     console.log(err);
+    const message = "Error retrieving profile from database";
     res.status(500).render("error", {
-      message: "Error retrieving profile from database",
+      message: message,
       status: 500,
-      title: `$(status) $(message)`,
+      title: `${500} ${message}`,
     });
   }
 });
@@ -87,8 +90,9 @@ router.get(
     try {
       const profile = await profileModel.getById(req.params.id);
       if (!profile) {
+        const message = "Profile not found";
         return res.status(404).render("404", {
-          message: "Profile not found",
+          message: message,
           url: req.url,
           title: "404",
         });
@@ -96,10 +100,11 @@ router.get(
       res.render("profile/edit", { user: profile, title: "Edit Profile" });
     } catch (err) {
       console.log(err);
+      const message = "Error retrieving profile from database";
       res.status(500).render("error", {
-        message: "Error retrieving profile from database",
+        message: message,
         status: 500,
-        title: `$(status) $(message)`,
+        title: `${500} ${message}`,
       });
     }
   },
@@ -164,10 +169,11 @@ router.put(
       res.redirect(`/profile/${req.params.id}`);
     } catch (err) {
       console.log(err);
+      const message = "Error updating profile";
       res.status(500).render("error", {
-        message: "Error updating profile",
+        message: message,
         status: 500,
-        title: `$(status) $(message)`,
+        title: `${500} ${message}`,
       });
     }
   },
@@ -187,10 +193,11 @@ router.delete("/:id", authenticate, isAuthorized("user"), async (req, res) => {
     res.redirect("/");
   } catch (err) {
     console.log(err);
+    const message = "Error deleting profile";
     res.status(500).render("error", {
-      message: "Error deleting profile",
+      message: message,
       status: 500,
-      title: `$(status) $(message)`,
+      title: `${500} ${message}`,
     });
   }
 });

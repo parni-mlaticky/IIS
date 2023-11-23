@@ -30,10 +30,11 @@ router.get("/", checkLogin, async (req, res) => {
     res.render("groups", { groups, user: req.userData, title: "Groups" });
   } catch (err) {
     console.log(err);
+    const message = "Error retrieving groups from database";
     res.status(500).render("error", {
-      message: "Error retrieving groups from database",
+      message: message,
       status: 500,
-      title: `$(status) $(message)`,
+      title: `${500} ${message}`,
     });
   }
 });
@@ -47,7 +48,7 @@ router.get("/:id", async (req, res) => {
       res.status(404).render("404", {
         message: "Group not found",
         url: req.url,
-        title: `$(message`,
+        title: "404",
       });
       return;
     }
@@ -55,10 +56,11 @@ router.get("/:id", async (req, res) => {
     res.render("groups/detail", { group, userDataCookie: req.userData });
   } catch (err) {
     console.log(err);
+    const message = "Error retrieving group from database";
     res.status(500).render("error", {
-      message: "Error retrieving group from database",
+      message: message,
       status: 500,
-      title: `$(status) $(message)`,
+      title: `${500} ${message}`,
     });
   }
 });
@@ -67,19 +69,21 @@ router.get("/:userid", async (req, res) => {
   try {
     const groups = await groupModel.getByUserId(req.params.userid);
     if (!groups) {
+      const message = "Groups not found";
       return res.status(404).render("404", {
-        message: "Groups not found",
+        message: message,
         url: req.url,
-        title: `$(message`,
+        title: `404`,
       });
     }
     res.render("groups", { groups });
   } catch (err) {
     console.log(err);
+    const message = "Error retrieving groups from database";
     res.status(500).render("error", {
-      message: "Error retrieving groups from database",
+      message: message,
       status: 500,
-      title: `$(status) $(message)`,
+      title: `${500} ${message}`,
     });
   }
 });
@@ -88,21 +92,21 @@ router.get("/:name", async (req, res) => {
   try {
     const groups = await groupModel.getByName(req.params.name);
     if (!groups) {
-      return res
-        .status(404)
-        .render("404", {
-          message: "Groups not found",
-          url: req.url,
-          title: `$(message`,
-        });
+      const message = "Groups not found";
+      return res.status(404).render("404", {
+        message: message,
+        url: req.url,
+        title: `${404} ${message}`,
+      });
     }
     res.render("groups", { groups });
   } catch (err) {
     console.log(err);
+    const message = "Error retrieving groups from database";
     res.status(500).render("error", {
-      message: "Error retrieving groups from database",
+      message: message,
       status: 500,
-      title: `$(status) $(message)`,
+      title: `${500} ${message}`,
     });
   }
 });
@@ -112,13 +116,12 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
     const existing = await groupModel.getByName(req.body.name);
     console.log(existing);
     if (existing.length != 0) {
-      return res
-        .status(409)
-        .render({
-          message: "Group already exists",
-          status: 409,
-          title: `$(status) $(message)`,
-        });
+      const message = "Group already exists";
+      return res.status(409).render({
+        message: message,
+        status: 409,
+        title: `${409} ${message}`,
+      });
     }
 
     if (
@@ -127,10 +130,11 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
       !req.body.visibility ||
       !req.file.path
     ) {
+      const message = "All form fileds must be filled";
       return res.status(500).render("error", {
-        message: "All form fileds must be filled",
+        message: message,
         status: 500,
-        title: `$(status) $(message)`,
+        title: `${500} ${message}`,
       });
     }
 
@@ -145,13 +149,12 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
     res.redirect(`/groups/${newGroupID}`);
   } catch (err) {
     console.log(err);
-    res
-      .status(500)
-      .render("error", {
-        message: "Error creating group",
-        status: 500,
-        title: `$(status) $(message)`,
-      });
+    const message = "Error creating group";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
   }
 });
 
@@ -159,13 +162,12 @@ router.put("/:id", authenticate, isAuthorized("group"), async (req, res) => {
   try {
     const group = await groupModel.getById(req.params.id);
     if (!group) {
-      return res
-        .status(404)
-        .render("404", {
-          message: "Group not found",
-          url: req.url,
-          title: `$(message`,
-        });
+      const message = "Group not found";
+      return res.status(404).render("404", {
+        message: message,
+        url: req.url,
+        title: `${404} ${message}`,
+      });
     }
     group.name = req.body.name;
     group.description = req.body.description;
@@ -175,13 +177,12 @@ router.put("/:id", authenticate, isAuthorized("group"), async (req, res) => {
     res.redirect(`/groups/${req.params.id}`);
   } catch (err) {
     console.log(err);
-    res
-      .status(500)
-      .render("error", {
-        message: "Error updating group",
-        status: 500,
-        title: `$(status) $(message)`,
-      });
+    const message = "Error updating group";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
   }
 });
 
@@ -189,24 +190,22 @@ router.delete("/:id", authenticate, isAuthorized("group"), async (req, res) => {
   try {
     const group = await groupModel.getById(req.params.id);
     if (!group) {
-      return res
-        .status(404)
-        .render("404", {
-          message: "Group not found",
-          url: req.url,
-          title: `$(message`,
-        });
+      const message = "Group not found";
+      return res.status(404).render("404", {
+        message: message,
+        url: req.url,
+        title: `${404} ${message}`,
+      });
     }
     await group.delete();
     res.redirect("/groups");
   } catch (err) {
     console.log(err);
-    res
-      .status(500)
-      .render("error", {
-        message: "Error deleting group",
-        status: 500,
-        title: `$(status) $(message)`,
-      });
+    const message = "Error deleting group";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
   }
 });
