@@ -53,7 +53,11 @@ router.get("/:id", async (req, res) => {
       return;
     }
 
-    res.render("groups/detail", { group, userDataCookie: req.userData });
+    res.render("groups/detail", {
+      group,
+      userDataCookie: req.userData,
+      title: group[0].name,
+    });
   } catch (err) {
     console.log(err);
     const message = "Error retrieving group from database";
