@@ -12,6 +12,7 @@ const checkLogin = (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.isLogged = true;
       req.userData = decoded; // You can use this to access user data in your templates
+      req.isAdmin = decoded.isAdmin;
     } else {
       req.isLogged = false;
     }
@@ -37,7 +38,7 @@ const authenticate = (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
-  if (req.userData && req.userData.role === "admin") {
+  if (req.userData?.isAdmin) {
     next();
   } else {
     return res.status(403).json({ message: "Admin authorization failed" });

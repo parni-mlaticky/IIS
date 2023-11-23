@@ -13,9 +13,16 @@
           <h3 style="color: red">Admin</h3>
         <% } %>
 
-        <div class="profile-actions">
+        <% if (editable) { %>
+          <div class="profile-actions">
             <a href="/profile/<%= user.id %>/edit">Edit Profile</a>
-        </div>
+          </div>
+        <% } %>
+        <% if(adminAccess && !editable) { %>
+          <div class="profile-actions">
+            <a href="/profile/<%= user.id %>/admin/edit" style="color: red">Edit this user's profile</a>
+          </div>
+        <% } %>
     </div>
 </body>
 </html>
