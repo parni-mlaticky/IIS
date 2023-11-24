@@ -11,7 +11,7 @@ const checkLogin = (req, res, next) => {
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.isLogged = true;
-      req.userData = decoded; 
+      req.userData = decoded;
       req.isAdmin = decoded.isAdmin;
       req.userData.isAdmin = decoded.isAdmin;
     } else {

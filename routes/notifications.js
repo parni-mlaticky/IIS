@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const NotificationModel = require("../models/Notification");
 const UserGroupRoleModel = require("../models/User_Group_role");
-const { NotificationType } = require("../constants");
+const { NotificationType, GroupRole } = require("../constants");
 const { authenticate } = require("../middlewares/auth");
 
 module.exports = router;
@@ -64,7 +64,16 @@ router.post("/:id/accept_moderator", authenticate, async (req, res) => {
 
 router.post("/:id/reject_moderator", authenticate, async (req, res) => {
   try {
-    await NotificationModel.delete(req.params.id);
+    let noitification = await NotificationModel.getById(req.params.id);
+    noitification = new NotificationModel(
+      noitification[0].id,
+      noitification[0].group_id,
+      noitification[0].applicant_id,
+      noitification[0].recipient_id,
+      NotificationType.MODERATOR_REQUEST,
+      noitification[0].message,
+    );
+    await noitification.delete();
     res.redirect("/notifications");
   } catch (err) {
     console.log(err);
@@ -80,13 +89,26 @@ router.post("/:id/reject_moderator", authenticate, async (req, res) => {
 router.post("/:id/accept_invite", authenticate, async (req, res) => {
   try {
     const details = await NotificationModel.getById(req.params.id);
-    const userGroupRole = await UserGroupRoleModel.getByUserIdAndGroupId(
-      details[0].applicant_id,
+    console.log(details);
+
+    const userGroupRole = new UserGroupRoleModel(
+      null,
+      details[0].recipient_id,
       details[0].group_id,
+      GroupRole.MEMBER,
     );
-    userGroupRole.role = 0;
-    await userGroupRole.update();
-    await NotificationModel.delete(req.params.id);
+
+    const notification = new NotificationModel(
+      details[0].id,
+      details[0].group_id,
+      details[0].applicant_id,
+      details[0].recipient_id,
+      NotificationType.INVITE,
+      details[0].message,
+    );
+
+    await userGroupRole.save();
+    await notification.delete();
     res.redirect("/notifications");
   } catch (err) {
     console.log(err);
@@ -101,7 +123,16 @@ router.post("/:id/accept_invite", authenticate, async (req, res) => {
 
 router.post("/:id/reject_invite", authenticate, async (req, res) => {
   try {
-    await NotificationModel.delete(req.params.id);
+    let notification = await NotificationModel.getById(req.params.id);
+    notification = new NotificationModel(
+      notification[0].id,
+      notification[0].group_id,
+      notification[0].applicant_id,
+      notification[0].recipient_id,
+      notification[0].notification_type,
+      notification[0].message,
+    );
+    await notification.delete();
     res.redirect("/notifications");
   } catch (err) {
     console.log(err);

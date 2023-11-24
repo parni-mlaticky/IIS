@@ -115,6 +115,8 @@ router.get("/:id", async (req, res) => {
     const groupMembers = await userGroupModel.getGroupMembers(group[0].id);
     console.log(groupMembers);
 
+    console.log(groupMembers);
+
     groupMembers.forEach((member) => {
       console.log(member);
       switch (member.role) {
@@ -134,6 +136,16 @@ router.get("/:id", async (req, res) => {
       group[0].id,
     );
 
+    let canInvite = false;
+    if (req.userData) {
+      canInvite =
+        req.userData.id == ownerUser.user_id ||
+        req.isAdmin ||
+        moderatorUsers.some(
+          (moderator) => moderator.user_id == req.userData.id,
+        );
+    }
+
     res.render("groups/detail", {
       group: group[0],
       user: req.userData,
@@ -141,6 +153,7 @@ router.get("/:id", async (req, res) => {
       user_can_edit,
       user_can_join,
       user_can_apply_for_moderator,
+      canInvite,
       owner: ownerUser,
       moderators: moderatorUsers,
       members: members,

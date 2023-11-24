@@ -16,7 +16,6 @@ const GroupRole = {
 };
 
 const NotificationType = {
-  PRIVATE_INVITE: 0,
   MODERATOR_REQUEST: 1,
   ADMINISTRATION_REQUEST: 2,
   INVITE: 3,

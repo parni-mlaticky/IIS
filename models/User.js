@@ -12,7 +12,7 @@ class User {
 
   async save() {
     try {
-      if(this.id) {
+      if (this.id) {
         return this.update();
       }
       const result = await db.execute(
@@ -31,11 +31,12 @@ class User {
       console.log(err);
     }
   }
+  user;
 
   static async getByUsername(username) {
     try {
       const [rows] = await db.execute(
-        "SELECT * FROM Registered_user WHERE username = ?",
+        "SELECT * FROM Registered_user WHERE username like ?",
         [username],
       );
       return rows[0];
@@ -44,9 +45,24 @@ class User {
     }
   }
 
+  static async getByUsernameLike(username) {
+    try {
+      const [rows] = await db.execute(
+        "SELECT * FROM Registered_user WHERE username like ?",
+        [`%${username}%`],
+      );
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   static async getAllWithVisibilityLevel(level) {
     try {
-      const [rows] = await db.execute("SELECT * FROM Registered_user WHERE visibility >= ?", [level]);
+      const [rows] = await db.execute(
+        "SELECT * FROM Registered_user WHERE visibility >= ?",
+        [level],
+      );
       return rows;
     } catch (err) {
       console.log(err);
@@ -84,7 +100,7 @@ class User {
           this.password,
           this.visibility,
           this.is_admin,
-          this.id
+          this.id,
         ],
       );
       return this.id;

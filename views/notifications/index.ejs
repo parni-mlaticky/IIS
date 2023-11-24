@@ -12,6 +12,13 @@
         <form action="/notifications/<%= notifications[i].id %>/reject_moderator" method="POST">
             <button type="submit">Decline</button>
         </form>
+    <% } else if (notifications[i].notification_type === 3) { %>
+        <form action="/notifications/<%= notifications[i].id %>/accept_invite" method="POST">
+            <button type="submit">Accept</button>
+        </form>
+        <form action="/notifications/<%= notifications[i].id %>/reject_invite" method="POST">
+            <button type="submit">Decline</button>
+        </form>
     <% } %>
 
     </div>

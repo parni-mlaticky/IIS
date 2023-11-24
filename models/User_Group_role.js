@@ -101,6 +101,20 @@ class User_Group_role {
     }
   }
 
+  static async getNonMembers(user_name, group_id) {
+    try {
+      const query = `
+      SELECT ru.id, ru.username, ru.path_to_avatar, ru.visibility, ru.is_admin
+      FROM Registered_user ru
+      WHERE ru.username LIKE ? AND ru.id NOT IN (SELECT user_id FROM User_Group_role WHERE group_id = ?)
+    `;
+      const [rows] = await db.execute(query, [`%${user_name}%`, group_id]);
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   static async getAll() {
     try {
       const [rows] = await db.execute("SELECT * FROM User_Group_role");
