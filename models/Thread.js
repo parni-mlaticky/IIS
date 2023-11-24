@@ -10,6 +10,9 @@ class Thread {
 
   async save() {
     try {
+      if (this.id) {
+        return this.update();
+      }
       const [rows] = await db.query(
         "INSERT INTO Thread (group_id, title, content_id) VALUES (?, ?, ?)",
         [this.group_id, this.title, this.content_id],
@@ -24,7 +27,7 @@ class Thread {
   static async getAllWithContentUser(group_id) {
     try {
       const [rows] = await db.query(
-        "select * from Thread t JOIN Comment c JOIN Registered_user u ON t.content_id=c.id AND c.author_id=u.id WHERE group_id = ?",
+        "select * , t.id AS parent_id from Thread t JOIN Comment c JOIN Registered_user u ON t.content_id=c.id AND c.author_id=u.id WHERE group_id = ?",
         [group_id],
       );
       return rows;
@@ -32,6 +35,19 @@ class Thread {
       console.log(err);
     }
   }
+
+  static async getThreadWithContentUser(thread_id) {
+    try {
+      const [rows] = await db.query(
+        "select *, t.id AS parent_id from Thread t JOIN Comment c JOIN Registered_user u ON t.content_id=c.id AND c.author_id=u.id WHERE t.id = ?",
+        [thread_id],
+      );
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
 
   static async getAll() {
     try {

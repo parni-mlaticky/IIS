@@ -68,8 +68,8 @@ function isAuthorized(entityType) {
             : null;
           break;
         case "thread":
-          const thread = await threadModel.getById(resourceId);
-          ownerUserId = thread.user_id;
+          const thread = await threadModel.getThreadWithContentUser(resourceId);
+          ownerUserId = thread[0].author_id;
           break;
         case "user":
           const user = await userModel.getById(resourceId);
