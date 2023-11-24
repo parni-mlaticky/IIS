@@ -20,14 +20,15 @@ router.get("/", (req, res) => {
 });
 
 router.get("/login", (req, res) => {
-  res.render("login", { title: "Login", message: "Hello, EJS!" });
+  res.render("login", { title: "Login", message: "Hello, EJS!"});
 });
 
 router.get("/register", checkLogin, (req, res) => {
+  console.log(req.isLogged);
   if(req.isLogged){
-    res.redirect("/profile", { title: "Profile" , error: true, error_message: "You are already logged in"});
+    res.redirect("/profile?error_message=You are already logged in");
   }
-  res.render("register", { title: "Register", error: false ,error_message: "" });
+  res.render("register", { title: "Register", error: false });
 });
 
 router.get("/logout", (req, res) => {

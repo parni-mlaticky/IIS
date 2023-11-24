@@ -18,9 +18,7 @@
     </script>
   </head>
   <body>
-    <% if(error) { %>
-      <h1 style="color:red"> Error: <%= error_message %> </h1>
-    <% } %>
+    <%- include('../partials/navbar.ejs') %>
     <h1 style="color: red">Editing another user's profile</h1>
 
     <form action="/profile/<%=user.id%>/admin/?_method=PUT" method="post" id="form", enctype="multipart/form-data">

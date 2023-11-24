@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/public/css/statuses.css">
+</head>
+<body>
+  <% if(typeof success_message != 'undefined' && success_message != 'undefined') { %>
+    <div class="success">
+      <h3><%= success_message %></h3>
+      <% success_message = 'undefined'; %>
+    </div>
+  <% } %>
+  <% if(typeof error_message != 'undefined' && error_message != 'undefined') { %>
+    <div class="error">
+      <h3><%= error_message %></h3>
+      <% error_message = 'undefined'; %>
+    </div>
+  <% } %>
+  <% if(typeof info_message != 'undefined' && info_message != 'undefined') { %>
+    <div class="info">
+      <h3><%= info_message %></h3>
+      <% info_message = 'undefined'; %>
+    </div>
+  <% } %>
+
+
+    <div id="url_messages" name="url_messages">
+    </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const success_message = params.get('success_message');
+    const error_message = params.get('error_message');
+    const info_message = params.get('info_message');
+    document.addEventListener('DOMContentLoaded', () => {
+      const url_messages = document.getElementById('url_messages');
+      if(info_message && info_message != "undefined") {
+        let div = document.createElement('div');
+        div.className = 'info';
+        div.innerHTML = `<h3 class="info">${info_message}</h3>`;
+        url_messages.appendChild(div);
+      }
+      if(success_message && success_message != "undefined") {
+        let div = document.createElement('div');
+        div.className = 'success';
+        div.innerHTML = `<h3 class="success">${success_message}</h3>`;
+        url_messages.appendChild(div);
+      }
+      if(error_message && error_message != "undefined") {
+        let div = document.createElement('div');
+        div.className = 'error';
+        div.innerHTML = `<h3 class="error">${error_message}</h3>`;
+        url_messages.appendChild(div);
+      }
+    })
+  </script>
+</body>
+
+
