@@ -4,6 +4,7 @@ const profileRoute = require("./profile");
 const groupsRoute = require("./groups");
 const threadsRoute = require("./threads");
 const usersRoute = require("./users");
+const notificationRoute = require("./notifications");
 
 const router = express.Router();
 
@@ -12,6 +13,7 @@ router.use("/profile", profileRoute);
 router.use("/groups", groupsRoute);
 router.use("/threads", threadsRoute);
 router.use("/users", usersRoute);
+router.use("/notifications", notificationRoute);
 
 router.get("/", (req, res) => {
   res.render("index", { message: "Hello, EJS!", title: "Home" });

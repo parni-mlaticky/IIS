@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const NotificationModel = require("../models/Notification");
+const UserGroupRoleModel = require("../models/User_Group_role");
 const { NotificationType } = require("../constants");
 const { authenticate } = require("../middlewares/auth");
 
@@ -25,14 +26,30 @@ router.get("/", authenticate, async (req, res) => {
 
 router.post("/:id/accept_moderator", authenticate, async (req, res) => {
   try {
-    const details = await NotificationModel.getById(req.params.id);
-    const userGroupRole = await UserGroupRoleModel.getByUserIdAndGroupId(
+    let details = await NotificationModel.getById(req.params.id);
+    let userGroupRole = await UserGroupRoleModel.getByUserIdAndGroupId(
       details[0].applicant_id,
       details[0].group_id,
     );
+    userGroupRole = userGroupRole[0];
+    userGroupRole = new UserGroupRoleModel(
+      userGroupRole.id,
+      userGroupRole.user_id,
+      userGroupRole.group_id,
+      userGroupRole.role,
+    );
     userGroupRole.role = 1;
-    await userGroupRole.update();
-    await NotificationModel.delete(req.params.id);
+    await userGroupRole.save();
+
+    details = new NotificationModel(
+      details[0].id,
+      details[0].group_id,
+      details[0].applicant_id,
+      details[0].recipient_id,
+      NotificationType.MODERATOR_REQUEST,
+      details[0].message,
+    );
+    await details.delete();
     res.redirect("/notifications");
   } catch (err) {
     console.log(err);
@@ -44,6 +61,7 @@ router.post("/:id/accept_moderator", authenticate, async (req, res) => {
     });
   }
 });
+
 router.post("/:id/reject_moderator", authenticate, async (req, res) => {
   try {
     await NotificationModel.delete(req.params.id);

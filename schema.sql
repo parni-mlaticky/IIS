@@ -50,7 +50,7 @@ create table Notification (
     applicant_id integer,
     recipient_id integer,
     group_id integer,
-    type integer,
+    notification_type integer,
     message varchar(255),
     post_time datetime
 );

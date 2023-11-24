@@ -27,6 +27,11 @@
           <input type="submit" value="Join group" />
         </form>
       <% } %>
+      <% if (user_can_apply_for_moderator) { %>
+        <form action="/groups/<%= group.id %>/request_moderator" method="post">
+          <input type="submit" value="Request moderator" />
+        </form>
+      <% } %>
     <% if (user_can_edit) { %>
       <h2>Edit group</h2>
       <form action="/groups/<%= group.id %>/?_method=PUT" method="post", if="form" enctype="multipart/form-data">

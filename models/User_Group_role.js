@@ -125,7 +125,7 @@ class User_Group_role {
   async update() {
     try {
       const [rows] = await db.execute(
-        "UPDATE User_Group_role SET user_id = ?, groupd_id = ?, role = ?, WHERE id = ?",
+        "UPDATE User_Group_role SET user_id = ?, group_id = ?, role = ? WHERE id = ?",
         [this.user_id, this.group_id, this.role, this.id],
       );
       return rows;

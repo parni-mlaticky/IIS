@@ -59,10 +59,12 @@ function isAuthorized(entityType) {
           ownerUserId = comment.user_id;
           break;
         case "group":
-          ownerUserId = await userGroupModel.isUserGroupOwner(
+          ownerUserId = (await userGroupModel.isUserGroupOwner(
             userId,
             resourceId,
-          ) ? userId : null;
+          ))
+            ? userId
+            : null;
           break;
         case "thread":
           const thread = await threadModel.getById(resourceId);

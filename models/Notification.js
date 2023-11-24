@@ -48,6 +48,18 @@ class Notification {
     }
   }
 
+  static async getByUserIdAndGroupId(user_id, group_id) {
+    try {
+      const [rows] = await db.execute(
+        "SELECT * FROM Notification WHERE applicant_id = ? AND group_id = ?",
+        [user_id, group_id],
+      );
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   static async getByRecipientId(recipient_id) {
     try {
       const [rows] = await db.execute(
