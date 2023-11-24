@@ -1,0 +1,46 @@
+  <%- include('../partials/navbar') %>
+    <script>
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+      });
+    </script>
+
+    <div class="heading">
+      <a href="/groups/<%= group.id %>">
+        <img src="/<%= group.path_to_avatar %>" height="80px">
+        <h2><%= group.name %></h2>
+      </a>
+      <h1><%= thread.title %></h1>
+      <p><%= thread.content %></p>
+      <%- include('../partials/user.ejs', { user_id: thread.user_id, path_to_avatar: thread.path_to_avatar, username: thread.username, details: thread.post_time }) %>
+      <hr>
+    <% if (user && user.id == thread.author_id) {%>
+    <h2>Edit thread</h2>
+    <form action="/threads/<%= thread.parent_id %>/?_method=PUT" method="post" if="form" enctype="x-www-form-urlencoded">
+      <label for="title">Title: </label>
+      <input type="text" name="title" placeholder="Title" /> <br>
+      <label for="content">Content: </label>
+      <input type="text" name="content" placeholder="Content" /> <br>
+      <input type="submit" value="Edit thread!" /> <br>
+    </form>
+    <hr>
+    <% } %>
+    </div>
+    <% if (isMember) { %>
+    <h2>Comment</h2>
+    <form action="/threads/<%= thread.parent_id %>/comments" method="post" enctype="x-www-form-urlencoded">
+      <label for="content">Content: </label>
+      <input type="text" name="content" placeholder="Content" /> <br>
+      <input type="submit" value="Post comment" /> <br>
+    </form>
+    <hr>
+    <% } %>
+    <% for (let i = 0; i < comments.length; i++) { %>
+        <div class="comment">
+            <%- include('../partials/user.ejs', { user_id: comments[i].author_id, path_to_avatar: comments[i].path_to_avatar, username: comments[i].username, details: comments[i].post_time }) %>
+            <p><%= comments[i].content %></p>
+            <hr>
+        </div>
+    <% } %>
+  </body>
+</html>
