@@ -1,0 +1,16 @@
+  <%- include('partials/navbar') %>
+
+  <img src="/<%= commentGroup.group_avatar %>" height="100px">
+  <a href="/groups/<%= commentGroup.group_id %>"><h2><%= commentGroup.name %></h2></a>
+  <a href="/threads/<%= commentGroup.thread_id %>"><h3><%= commentGroup.title %></h3></a>
+  <hr>
+  <h1>Edit comment</h1>
+  <%- include('partials/user.ejs', { user_id: commentGroup.user_id, path_to_avatar: commentGroup.path_to_avatar, username: commentGroup.username, details: commentGroup.post_time }) %>
+    <form action="/threads/<%= commentGroup.thread_id %>/comments/<%= commentGroup.comment_id %>/?_method=PUT" method="post" if="form" enctype="x-www-form-urlencoded">
+      <label for="content">Content: </label>
+      <input type="text" name="content" placeholder="Content" value="<%= commentGroup.content %>"/> <br>
+      <input type="submit" value="Post comment" /> <br>
+    </form>
+
+  </body>
+</html>

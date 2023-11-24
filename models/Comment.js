@@ -52,6 +52,18 @@ class Comment {
     }
   }
 
+  static async getCommentThreadGroup(comment_id) {
+    try {
+      const [rows] = await db.query(
+        "SELECT *, g.path_to_avatar AS group_avatar, c.id AS comment_id FROM Comment c JOIN Thread t JOIN `Group` g JOIN Registered_user u ON c.thread_id = t.id AND t.group_id = g.id AND c.author_id = u.id WHERE c.id = ?",
+        [comment_id]
+      );
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+
+  }
   static async getById(id) {
     try {
       const [rows] = await db.query("SELECT * FROM Comment WHERE id = ?", [id]);
