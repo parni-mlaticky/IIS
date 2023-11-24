@@ -1,17 +1,31 @@
 const db = require("../database");
 
 class Thread {
-  constructor(id, group_id, content_id) {
+  constructor(id, group_id, title, content_id) {
     this.id = id;
     this.group_id = group_id;
+    this.title = title;
     this.content_id = content_id;
   }
 
   async save() {
     try {
       const [rows] = await db.query(
-        "INSERT INTO Thread (id, group_id, content_id) VALUES (?, ?, ?)",
-        [this.name, this.description, this.picture_path, this.visibility],
+        "INSERT INTO Thread (group_id, title, content_id) VALUES (?, ?, ?)",
+        [this.group_id, this.title, this.content_id],
+      );
+      this.id = rows.insertId;
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  static async getAllWithContentUser(group_id) {
+    try {
+      const [rows] = await db.query(
+        "select * from Thread t JOIN Comment c JOIN Registered_user u ON t.content_id=c.id AND c.author_id=u.id WHERE group_id = ?",
+        [group_id],
       );
       return rows;
     } catch (err) {
@@ -51,8 +65,8 @@ class Thread {
   async update() {
     try {
       const [rows] = await db.query(
-        "UPDATE Thread SET group_id = ?, content_id = ? WHERE id = ?",
-        [this.group_id, this.content_id, this.id],
+        "UPDATE Thread SET group_id = ?, title = ?, content_id = ? WHERE id = ?",
+        [this.group_id, this.title, this.content_id, this.id],
       );
       return rows;
     } catch (err) {

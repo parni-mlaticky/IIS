@@ -9,7 +9,7 @@ module.exports = router;
 
 router.get("/:groupid", async (req, res) => {
   try {
-    const threads = await threadModel.getAllByGroupId(req.params.groupid);
+    const threads = await threadModel.getByGroupId(req.params.groupid);
     if (!threads) {
       return res.status(404).render("404", {
         message: "Threads not found",
@@ -29,26 +29,38 @@ router.get("/:groupid", async (req, res) => {
   }
 });
 
-router.post("/", authenticate, async (req, res) => {
+router.post("/:groupid", authenticate, async (req, res) => {
   try {
-    if (await threadModel.getByName(req.body.title)) {
-      const message = "Thread already exists";
-      return res.status(409).render("error", {
-        message: message,
-        status: 409,
-        title: `${409} ${message}`,
-      });
+    console.log("sanity check hello world");
+    console.log(req.body);
+
+    if (!req.body.content || !req.body.title) {
+      return res.status(500).send("Thread all fields must be filled.");
     }
+
+    const newComment = new commentModel(
+      null,
+      null,
+      req.userData.id,
+      req.body.content,
+      new Date(),
+      false,
+    );
+    const createdComment = await newComment.save();
+    const commentId = createdComment.insertId;
     const newThread = new threadModel(
       null,
+      req.params.groupid,
       req.body.title,
-      req.body.content,
-      req.body.picture_path,
-      req.body.group_id,
-      req.userData.id,
+      commentId,
     );
-    const newThreadId = await newThread.save();
-    res.redirect(`/threads/${newThreadId}`);
+    const createdThread = await newThread.save();
+    const threadId = createdThread.insertId;
+    console.log("Sanity check", threadId);
+    newComment.thread_id = threadId;
+    newComment.save();
+
+    res.redirect(`/groups/${req.params.groupid}`);
   } catch (err) {
     console.log(err);
     const message = "Error creating thread";
@@ -248,3 +260,8 @@ router.put(
     }
   },
 );
+
+
+
+
+

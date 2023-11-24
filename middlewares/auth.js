@@ -59,15 +59,10 @@ function isAuthorized(entityType) {
           ownerUserId = comment.user_id;
           break;
         case "group":
-          const user_group = await userGroupModel.getGroupOwnershipByUserId(
+          ownerUserId = await userGroupModel.isUserGroupOwner(
             userId,
             resourceId,
-          );
-          if (user_group.length == 1) {
-            ownerUserId = user_group[0].user_id;
-          } else {
-            ownerUserId = null;
-          }
+          ) ? userId : null;
           break;
         case "thread":
           const thread = await threadModel.getById(resourceId);
@@ -89,6 +84,7 @@ function isAuthorized(entityType) {
         return res.status(403).json({ message: "Authorization failed" });
       }
     } catch (err) {
+      console.log(err);
       res.status(500).send("Error authorizing user");
     }
   };
