@@ -3,6 +3,7 @@ const router = express.Router();
 const threadModel = require("../models/Thread");
 const groupModel = require("../models/Group");
 const commentModel = require("../models/Comment");
+const userGroupModel = require("../models/User_Group_role");
 const userCommentVoteModel = require("../models/User_Comment_vote");
 const { authenticate, isAuthorized, checkLogin } = require("../middlewares/auth");
 const { getThreadWithContentUser } = require("../models/Thread");
@@ -22,7 +23,7 @@ router.get("/:groupid", checkLogin, async (req, res) => {
     }
     const group = await groupModel.getById(thread_with_content[0].group_id);
 
-    if (!req.userData && thread_with_content.visibility != Visibility.PUBLIC) {
+    if (!req.userData && group[0].visibility != Visibility.PUBLIC) {
       return res.status(404).render("error", {
         message: "Thread not found",
         status: 404,
@@ -30,11 +31,19 @@ router.get("/:groupid", checkLogin, async (req, res) => {
       });
     }
 
+    let isMember = false;
+    if (req.userData) {
+      isMember = await userGroupModel.isUserGroupMember(req.userData.id, thread_with_content[0].group_id);
+    }
+
+    const threadComments = await threadModel.getCommentsUser(req.params.groupid);
     return res.status(200).render("threads/details", {
       title: `${group[0].name}: ${thread_with_content[0].title}`,
       thread: thread_with_content[0],
       group: group[0],
-      user: req.userData
+      user: req.userData,
+      comments: threadComments,
+      isMember
     });
 
   } catch (err) {
@@ -48,10 +57,23 @@ router.get("/:groupid", checkLogin, async (req, res) => {
   }
 });
 
-router.post("/:groupid", authenticate, async (req, res) => {
+router.post("/:groupid", authenticate, checkLogin, async (req, res) => {
   try {
     if (!req.body.content || !req.body.title) {
       return res.status(500).send("Thread all fields must be filled.");
+    }
+
+    let isMember = false;
+    if (req.userData) {
+      isMember = await userGroupModel.isUserGroupMember(req.userData.id, thread_with_content.group_id);
+    }
+    if (!isMember) {
+      const message = "Group not found";
+      res.status(404).render("error", {
+        message: message,
+        status: 404,
+        title: `${404} ${message}`,
+      });
     }
 
     // TODO CHECK membership permissions
@@ -174,17 +196,31 @@ router.delete(
   },
 );
 
-router.post("/:id/comments", authenticate, async (req, res) => {
+router.post("/:id/comments", authenticate, checkLogin, isAuthorized("thread"), async (req, res) => {
   try {
-    const newComment = new commentModel(
+    if (!req.body.content) {
+      const message = "Cannot post empty comment";
+      res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
+      });
+    }
+
+    if (!req.userData) {
+      res.redirect(`/login`);
+    }
+
+    const comment = new commentModel(
       null,
       req.params.id,
       req.userData.id,
       req.body.content,
       new Date(),
-      new Date(),
+      false
     );
-    await newComment.save();
+    comment.save();
+
     res.redirect(`/threads/${req.params.id}`);
   } catch (err) {
     console.log(err);

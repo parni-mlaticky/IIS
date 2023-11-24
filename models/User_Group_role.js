@@ -62,6 +62,18 @@ class User_Group_role {
     }
   }
 
+  static async isUserGroupMember(user_id, group_id) {
+    try {
+      const [rows] = await db.execute(
+        "SELECT * FROM User_Group_role WHERE user_id = ? and group_id = ?",
+        [user_id, group_id],
+      );
+      return rows.length == 1 ? rows[0] : null;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   static async getGroupOwner(group_id) {
     try {
       const [rows] = await db.execute(

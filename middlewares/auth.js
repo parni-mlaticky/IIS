@@ -57,7 +57,7 @@ function isAuthorized(entityType) {
       switch (entityType) {
         case "comment":
           const comment = await commentModel.getById(resourceId);
-          ownerUserId = comment.user_id;
+          ownerUserId = comment[0].author_id;
           break;
         case "group":
           ownerUserId = (await userGroupModel.isUserGroupOwner(
