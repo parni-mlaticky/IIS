@@ -36,7 +36,7 @@ class User {
   static async getByUsername(username) {
     try {
       const [rows] = await db.execute(
-        "SELECT * FROM Registered_user WHERE username like ?",
+        "SELECT * FROM Registered_user WHERE username = ?",
         [username],
       );
       return rows[0];
