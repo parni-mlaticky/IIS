@@ -254,12 +254,8 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
     }
 
     if (!req.body.name || !req.body.description || !req.body.visibility) {
-      const message = "All form fields must be filled";
-      return res.status(500).render("error", {
-        message: message,
-        status: 500,
-        title: `${500} ${message}`,
-      });
+      const error_message = "To create a group, fill in the name, description and visibility fields.";
+      return res.redirect(`/groups?error_message=${error_message}`);
     }
 
     const newGroup = new groupModel(
