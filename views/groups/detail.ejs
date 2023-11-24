@@ -1,19 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <title><%= group.name %> Group</title>
-    <script>
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-      });
-    </script>
-</head>
-<body>
     <%- include('../partials/navbar') %>
+<div class="member-sidebar">
+    <h3>Group Members</h3>
+    <div class="owner">
+      <h4>Owner</h4>
+      <p><%= owner.username %> (<a href="/profile/<%= owner.user_id %>">Profile</a>)</p>
+    </div>
+    <div class="moderators">
+      <h4>Moderators</h4>
+      <% moderators.forEach(function(moderator) { %>
+        <p><%= moderator.username %> (<a href="/profile/<%= moderator.user_id %>">Profile</a>)</p>
+      <% }); %>
+    </div>
+    <div class="members">
+      <h4>Members</h4>
+      <% members.forEach(function(member) { %>
+        <p><%= member.username %> (<a href="/profile/<%= member.user_id %>">Profile</a>)</p>
+      <% }); %>
+    </div>
+  </div>
   <div>
     <h1><%= group.name %></h1>
     <p><%= group.description %></p>
     <img src="/<%= group.path_to_avatar%>" height="100px">
+      <% if (user_can_join) { %>
+        <form action="/groups/<%= group.id %>/join" method="post">
+          <input type="submit" value="Join group" />
+        </form>
+      <% } %>
     <% if (user_can_edit) { %>
       <h2>Edit group</h2>
       <form action="/groups/<%= group.id %>/?_method=PUT" method="post", if="form" enctype="multipart/form-data">
@@ -59,6 +72,12 @@
       }
     }
   </script>
+
+    <script>
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+      });
+    </script>
   <div>
     <% for (let i = 0; i < threads.length; i++) { %>
       <h2><%=  %></h2>

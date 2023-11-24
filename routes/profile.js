@@ -5,7 +5,12 @@ const multer = require("multer");
 const router = express.Router();
 const profileModel = require("../models/User");
 const bcrypt = require("bcrypt");
-const { authenticate, isAuthorized, checkLogin, isAdmin } = require("../middlewares/auth");
+const {
+  authenticate,
+  isAuthorized,
+  checkLogin,
+  isAdmin,
+} = require("../middlewares/auth");
 module.exports = router;
 
 const storage = multer.diskStorage({
@@ -55,15 +60,25 @@ router.get("/:id", async (req, res) => {
       });
     }
 
-    if(profile.visibility === constants.Visibility.PRIVATE && req.userData.id !== profile.id && !req.userData.isAdmin) {
+    if (
+      profile.visibility === constants.Visibility.PRIVATE &&
+      req.userData.id !== profile.id &&
+      !req.userData.isAdmin
+    ) {
+      const message = "Profile is private";
       return res.status(403).render("profile/private_profile", {
         message: message,
         status: 403,
         title: `${403} ${message}`,
       });
     }
-    
-    res.render("profile", { user: profile, title: "Profile", editable: req.userData?.id === profile.id, adminAccess: req.userData.isAdmin });
+
+    res.render("profile", {
+      user: profile,
+      title: "Profile",
+      editable: req.userData?.id === profile.id,
+      adminAccess: req.isAdmin,
+    });
   } catch (err) {
     console.log(err);
     const message = "Error retrieving profile from database";
@@ -103,35 +118,30 @@ router.get(
   },
 );
 
-router.get(
-  "/:id/admin/edit",
-  authenticate,
-  isAdmin,
-  async (req, res) => {
-    try {
-      const profile = await profileModel.getById(req.params.id);
-      if (!profile) {
-        return res
-          .status(404)
-          .render("404", { message: "Profile not found", url: req.url });
-      }
-      if(profile.id === req.userData.id) {
-        return res.status(403).render("error", {
-          message: "An administrator cannot admin-edit their own profile",
-          status: 403,
-          title: `${403} ${"Error"}`,
-        });
-      }
-      res.render("profile/admin_edit", { user: profile });
-    } catch (err) {
-      console.log(err);
-      res.status(500).render("error", {
-        message: "Error retrieving profile from database",
-        status: 500,
+router.get("/:id/admin/edit", authenticate, isAdmin, async (req, res) => {
+  try {
+    const profile = await profileModel.getById(req.params.id);
+    if (!profile) {
+      return res
+        .status(404)
+        .render("404", { message: "Profile not found", url: req.url });
+    }
+    if (profile.id === req.userData.id) {
+      return res.status(403).render("error", {
+        message: "An administrator cannot admin-edit their own profile",
+        status: 403,
+        title: `${403} ${"Error"}`,
       });
     }
+    res.render("profile/admin_edit", { user: profile });
+  } catch (err) {
+    console.log(err);
+    res.status(500).render("error", {
+      message: "Error retrieving profile from database",
+      status: 500,
+    });
   }
-)
+});
 
 const visibility_to_id = (visibility) => {
   switch (visibility) {
@@ -198,37 +208,50 @@ router.put(
         status: 500,
         title: `${500} ${message}`,
       });
-
     }
   },
 );
 
-router.put("/:id/admin", authenticate, isAdmin, upload.single("picture"), async (req, res) => {
-  try {
-    const profile = await profileModel.getById(req.params.id);
-    if (!profile) {
-      return res
-        .status(404)
-        .render("404", { message: "Profile not found", url: req.url });
+router.put(
+  "/:id/admin",
+  authenticate,
+  isAdmin,
+  upload.single("picture"),
+  async (req, res) => {
+    try {
+      const profile = await profileModel.getById(req.params.id);
+      if (!profile) {
+        return res
+          .status(404)
+          .render("404", { message: "Profile not found", url: req.url });
+      }
+      new_password_hash = req.body.new_password
+        ? await bcrypt.hash(req.body.new_password, 10)
+        : profile.pwd_hash;
+      new_username = req.body.username || profile.username;
+      new_picture_path = req.file?.path || profile.path_to_avatar;
+      new_visibility = req.body.visibility || profile.visibility;
+      console.log("FORM_ADMIN", req.body.is_admin);
+      new_is_admin = req.body.is_admin == "true" || false;
+      const profileObj = new profileModel(
+        req.params.id,
+        new_username,
+        new_picture_path,
+        new_password_hash,
+        visibility_to_id(new_visibility),
+        new_is_admin,
+      );
+      await profileObj.save();
+      res.redirect(`/profile/${profile.id}`);
+    } catch (err) {
+      console.log(err);
+      res.status(500).render("error", {
+        message: "Error retrieving profile from database",
+        status: 500,
+      });
     }
-    new_password_hash = req.body.new_password ? await bcrypt.hash(req.body.new_password, 10) : profile.pwd_hash;
-    new_username = req.body.username || profile.username;
-    new_picture_path = req.file?.path || profile.path_to_avatar;
-    new_visibility = req.body.visibility || profile.visibility;
-    console.log("FORM_ADMIN", req.body.is_admin)
-    new_is_admin = req.body.is_admin == "true" || false;
-    const profileObj = new profileModel(req.params.id, new_username, new_picture_path, new_password_hash, 
-      visibility_to_id(new_visibility), new_is_admin);
-    await profileObj.save();
-    res.redirect(`/profile/${profile.id}`);
-  } catch (err) {
-    console.log(err);
-    res.status(500).render("error", {
-      message: "Error retrieving profile from database",
-      status: 500,
-    });
-  }
-});
+  },
+);
 
 router.delete("/:id", authenticate, isAuthorized("user"), async (req, res) => {
   try {

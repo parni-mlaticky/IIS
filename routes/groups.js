@@ -6,7 +6,12 @@ const userGroupModel = require("../models/User_Group_role");
 const userCommentVoteModel = require("../models/User_Comment_vote");
 const threadModel = require("../models/Thread")
 const NotificationModel = require("../models/Notification");
-const { GroupRole, Visibility, NotificationType, DEFAULT_GROUP_AVATAR_PATH } = require("../constants")
+const {
+  GroupRole,
+  Visibility,
+  NotificationType,
+  DEFAULT_GROUP_AVATAR_PATH,
+} = require("../constants");
 
 const {
   authenticate,
@@ -37,8 +42,7 @@ router.get("/", async (req, res) => {
     let groups;
     if (!req.userData) {
       groups = await groupModel.getAllWithVisibility(Visibility.PUBLIC);
-    }
-    else {
+    } else {
       groups = await groupModel.getAll();
     }
     // TDOO show to members only if visibility is 1
@@ -78,6 +82,15 @@ router.get("/:id", checkLogin, async (req, res) => {
       );
     }
 
+    let user_can_join = false;
+    if (req.userData) {
+      const user_group = await userGroupModel.getByUserIdAndGroupId(
+        req.userData.id,
+        req.params.id,
+      );
+      user_can_join = user_group.length == 0;
+    }
+
     let ownerUser = null;
     let moderatorUsers = [];
     let members = [];
@@ -87,13 +100,13 @@ router.get("/:id", checkLogin, async (req, res) => {
     groupMembers.forEach((member) => {
       switch (member.role) {
         case GroupRole.OWNER:
-          ownerUser = userModel.getById(member.user_id);
+          ownerUser = member;
           break;
         case GroupRole.MODERATOR:
-          moderatorUsers.push(userModel.getById(member.user_id));
+          moderatorUsers.push(member);
           break;
         case GroupRole.MEMBER:
-          members.push(userModel.getById(member.user_id));
+          members.push(member);
           break;
       }
     });
@@ -105,6 +118,7 @@ router.get("/:id", checkLogin, async (req, res) => {
       user: req.userData,
       title: group[0].name,
       user_can_edit,
+      user_can_join,
       owner: ownerUser,
       moderators: moderatorUsers,
       members: members,
@@ -113,6 +127,36 @@ router.get("/:id", checkLogin, async (req, res) => {
   } catch (err) {
     console.log(err);
     const message = "Error retrieving group from database";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
+  }
+});
+
+router.post("/:id/join", authenticate, async (req, res) => {
+  try {
+    const group = await groupModel.getById(req.params.id);
+    if (!group) {
+      const message = "Group not found";
+      return res.status(404).render("404", {
+        message: message,
+        url: req.url,
+        title: `${404} ${message}`,
+      });
+    }
+    const newUserGroupRole = new userGroupModel(
+      null,
+      `${req.userData.id}`,
+      req.params.id,
+      GroupRole.MEMBER,
+    );
+    await newUserGroupRole.save();
+    res.redirect(`/groups/${req.params.id}`);
+  } catch (err) {
+    console.log(err);
+    const message = "Error joining group";
     res.status(500).render("error", {
       message: message,
       status: 500,
@@ -180,11 +224,7 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
       });
     }
 
-    if (
-      !req.body.name ||
-      !req.body.description ||
-      !req.body.visibility
-    ) {
+    if (!req.body.name || !req.body.description || !req.body.visibility) {
       const message = "All form fields must be filled";
       return res.status(500).render("error", {
         message: message,

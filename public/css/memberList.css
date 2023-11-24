@@ -1,0 +1,15 @@
+.member-sidebar {
+  width: 10%;
+  float: right;
+  position: fixed;
+  right: 0;
+}
+
+.member-sidebar h3,
+.member-sidebar h4 {
+  /* Styling for headings */
+}
+
+.member-sidebar div {
+  /* Styling for member list sections */
+}

@@ -36,10 +36,14 @@ class User_Group_role {
 
   static async getGroupMembers(group_id) {
     try {
-      const [rows] = await db.execute(
-        "SELECT * FROM User_Group_role WHERE group_id = ? order by role asc",
-        [group_id],
-      );
+      const query = `
+      SELECT ugr.user_id, ugr.group_id, ugr.role, ru.username, ru.path_to_avatar, ru.visibility, ru.is_admin
+      FROM User_Group_role ugr
+      INNER JOIN Registered_user ru ON ugr.user_id = ru.id
+      WHERE ugr.group_id = ?
+      ORDER BY ugr.role ASC
+    `;
+      const [rows] = await db.execute(query, [group_id]);
       return rows;
     } catch (err) {
       console.log(err);
