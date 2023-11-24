@@ -41,7 +41,7 @@ router.post("/login", async (req, res) => {
       const payload = {
         id: user.id,
         username: user.username,
-        isAdmin: user.is_admin,
+        isAdmin: user.is_admin || false,
       };
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "1h",
@@ -73,12 +73,8 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
       req.file?.path || constants.DEFAULT_PROFILE_AVATAR_PATH;
 
     if (!username || !password) {
-      const message = "Username or password missing";
-      return res.status(400).render("error", {
-        message: message,
-        status: 400,
-        title: `${400} ${message}`,
-      });
+      const error_message = "Username or password missing";
+      return res.redirect("/register?error_message=" + error_message)
     }
     9;
     if (req.cookies.token) {

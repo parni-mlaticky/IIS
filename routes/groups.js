@@ -75,6 +75,7 @@ router.get("/:id", async (req, res) => {
     }
 
     let user_can_edit = false;
+    console.log(req.userData);
     if (req.userData) {
       user_can_edit = await userGroupModel.isUserGroupOwner(
         req.userData.id,
@@ -89,7 +90,7 @@ router.get("/:id", async (req, res) => {
         req.params.id,
       );
       user_can_join = user_group.length == 0;
-      user_can_edit = user_group.length == 1 || req.isAdmin;
+      user_can_edit = (user_group.length == 1 && user_group[0].role > GroupRole.MODERATOR) || req.isAdmin;
     }
 
     let user_can_apply_for_moderator = false;
@@ -155,7 +156,7 @@ router.get("/:id", async (req, res) => {
       moderators: moderatorUsers,
       members: members,
       threads: threads_with_content,
-      is_member: members.some((member) => member.user_id == req.userData.id),
+      is_member: members.some((member) => member.user_id == req.userData?.id),
     });
 
   } catch (err) {
@@ -392,6 +393,9 @@ router.post("/:id/request_moderator", authenticate, async (req, res) => {
       `${applicant.username} requested to be a moderator of ${group[0].name}`,
     );
     await newNotification.save();
+
+    console.log(newNotification);
+
     res.redirect(`/groups/${req.params.id}`);
   } catch (err) {
     console.log(err);
