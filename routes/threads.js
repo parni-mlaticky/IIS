@@ -60,20 +60,17 @@ router.get("/:groupid", checkLogin, async (req, res) => {
 router.post("/:groupid", authenticate, checkLogin, async (req, res) => {
   try {
     if (!req.body.content || !req.body.title) {
-      return res.status(500).send("Thread all fields must be filled.");
+      return res.redirect(`/groups/${req.params.groupid}?error_message=To create a thread, please fill out the title and the content`);
     }
 
     let isMember = false;
+    const thread_with_content = await threadModel.getThreadWithContentUser(req.params.groupid);
     if (req.userData) {
       isMember = await userGroupModel.isUserGroupMember(req.userData.id, thread_with_content.group_id);
     }
+
     if (!isMember) {
-      const message = "Group not found";
-      res.status(404).render("error", {
-        message: message,
-        status: 404,
-        title: `${404} ${message}`,
-      });
+      return res.redirect(`/groups/${req.params.groupid}?error_message=You are not a member of this group so you are not allowed to post a thread`);
     }
 
     // TODO CHECK membership permissions
@@ -85,6 +82,7 @@ router.post("/:groupid", authenticate, checkLogin, async (req, res) => {
       new Date(),
       false,
     );
+
     const createdComment = await newComment.save();
     const commentId = createdComment.insertId;
     const newThread = new threadModel(
@@ -93,9 +91,11 @@ router.post("/:groupid", authenticate, checkLogin, async (req, res) => {
       req.body.title,
       commentId,
     );
+
     const createdThread = await newThread.save();
 
-    res.redirect(`/groups/${req.params.groupid}`);
+    res.redirect(`/groups/${req.params.groupid}?success_message=Thread created successfully`);
+
   } catch (err) {
     console.log(err);
     const message = "Error creating thread";

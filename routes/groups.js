@@ -71,10 +71,11 @@ router.get("/:id", async (req, res) => {
     }
 
     if (!req.userData && group[0].visibility != Visibility.PUBLIC) {
-      return res.status(404).send("Group not found");
+      return res.redirect("/groups?error_message=This group is not available for guests");
     }
 
     let user_can_edit = false;
+    console.log(req.userData);
     if (req.userData) {
       user_can_edit = await userGroupModel.isUserGroupOwner(
         req.userData.id,
@@ -89,7 +90,7 @@ router.get("/:id", async (req, res) => {
         req.params.id,
       );
       user_can_join = user_group.length == 0;
-      user_can_edit = user_group.length == 1 || req.isAdmin;
+      user_can_edit = (user_group.length == 1 && user_group[0].role > GroupRole.MODERATOR) || req.isAdmin;
     }
 
     let user_can_apply_for_moderator = false;
@@ -113,9 +114,6 @@ router.get("/:id", async (req, res) => {
     let members = [];
 
     const groupMembers = await userGroupModel.getGroupMembers(group[0].id);
-    console.log(groupMembers);
-
-    console.log(groupMembers);
 
     groupMembers.forEach((member) => {
       console.log(member);
@@ -158,6 +156,7 @@ router.get("/:id", async (req, res) => {
       moderators: moderatorUsers,
       members: members,
       threads: threads_with_content,
+      is_member: members.some((member) => member.user_id == req.userData?.id),
     });
 
   } catch (err) {
@@ -251,21 +250,13 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
   try {
     const existing = await groupModel.getByName(req.body.name);
     if (existing.length != 0) {
-      const message = "Group already exists";
-      return res.status(409).render({
-        message: message,
-        status: 409,
-        title: `${409} ${message}`,
-      });
+      const error_message = "Group with this name already exists";
+      return res.redirect(`/groups?error_message=${error_message}`);
     }
 
     if (!req.body.name || !req.body.description || !req.body.visibility) {
-      const message = "All form fields must be filled";
-      return res.status(500).render("error", {
-        message: message,
-        status: 500,
-        title: `${500} ${message}`,
-      });
+      const error_message = "To create a group, fill in the name, description and visibility fields.";
+      return res.redirect(`/groups?error_message=${error_message}`);
     }
 
     const newGroup = new groupModel(
@@ -284,7 +275,7 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
       GroupRole.OWNER,
     );
     await newUserGroupRole.save();
-    res.redirect(`/groups/${newGroupID}`);
+    res.redirect(`/groups/${newGroupID}?success_message=Group successfuly created!`);
 
   } catch (err) {
     console.log(err);
@@ -316,14 +307,10 @@ router.put(
         });
       }
 
-      // Hide non-public groups from unlogged-in users.
-      if (!req.userData && group[0].visibility != Visibility.PUBLIC) {
-        return res.status(404).send("Group not found");
-      }
-
       const sameName = await groupModel.getByName(req.body.name);
       if (sameName.length != 0) {
-        return res.status(500).send("Group with this name already exists");
+        const error_message = "Group with this name already exists";
+        return res.redirect(`/groups/${req.params.id}?error_message=${error_message}`);
       }
 
       group[0].name = req.body.name || group[0].name;
@@ -342,7 +329,8 @@ router.put(
       );
       await updatedGroup.save();
 
-      res.redirect(`/groups/${req.params.id}`);
+      res.redirect(`/groups/${req.params.id}?success_message=Group successfuly updated!`);
+
     } catch (err) {
       console.log(err);
       const message = "Error updating group";
@@ -369,8 +357,8 @@ router.delete("/:id", authenticate, isAuthorized("group"), async (req, res) => {
 
     const groupObject = new groupModel(req.params.id, null, null, null, null);
     await groupObject.delete();
+    res.redirect("/groups?success_message=Group successfuly deleted!");
 
-    res.redirect("/groups");
   } catch (err) {
     console.log(err);
     const message = "Error deleting group";
@@ -405,6 +393,9 @@ router.post("/:id/request_moderator", authenticate, async (req, res) => {
       `${applicant.username} requested to be a moderator of ${group[0].name}`,
     );
     await newNotification.save();
+
+    console.log(newNotification);
+
     res.redirect(`/groups/${req.params.id}`);
   } catch (err) {
     console.log(err);

@@ -1,0 +1,29 @@
+div.error {
+  color: #d8000c;
+  background-color: #ffbaba;
+  border: 1px solid;
+  margin: 10px 0px;
+  padding: 10px 10px 10px 10px;
+  border-color: #d8000c;
+  border-radius: 5px;
+}
+
+div.info {
+  color: #00529b;
+  background-color: #bde5f8;
+  border: 1px solid;
+  margin: 10px 0px;
+  padding: 10px 10px 10px 10px;
+  border-color: #00529b;
+  border-radius: 5px;
+}
+
+div.success {
+  color: #4f8a10;
+  background-color: #dff2bf;
+  border: 1px solid;
+  margin: 10px 0px;
+  padding: 10px 10px 10px 10px;
+  border-color: #4f8a10;
+  border-radius: 5px;
+}

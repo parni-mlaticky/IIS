@@ -73,7 +73,7 @@
       <hr>
     <% } %>
     <hr>
-    <% if (user) { %>
+    <% if (user && is_member) { %>
       <h2>Create Thread</h2>
       <form action="/threads/<%= group.id %>" method="post", enctype="x-www-form-urlencoded">
         <label for="title">Title: </label>

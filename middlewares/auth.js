@@ -79,7 +79,7 @@ function isAuthorized(entityType) {
       if (userId === ownerUserId || req.isAdmin) {
         next();
       } else {
-        return res.status(403).json({ message: "Authorization failed" });
+        return res.redirect("/?error_message=You are not authorized to perform this action.");
       }
     } catch (err) {
       console.log(err);

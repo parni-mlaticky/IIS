@@ -20,8 +20,6 @@ const storage = multer.diskStorage({
   },
 });
 
-
-
 const upload = multer({ storage: storage });
 
 module.exports = router;
@@ -29,20 +27,12 @@ module.exports = router;
 router.post("/login", async (req, res) => {
   try {
     if (!req.body.username || !req.body.password) {
-      const message = "username or password missing";
-      return res.status(400).render("error", {
-        message: message,
-        status: 400,
-        title: `${400} ${message}`,
-      });
+      const error_message = "Username or password missing";
+      return res.render("login", {error_message: error_message, title: "Login"});
     }
     if (req.cookies.token) {
-      const message = "User already logged in";
-      return res.status(400).render("error", {
-        message: message,
-        status: 400,
-        title: `${400} ${message}`,
-      });
+      const message = "You are already logged in";
+      return res.redirect("/profile?info_message=" + message);
     }
     const { username, password } = req.body;
     const user = await userModel.getByUsername(username);
@@ -51,7 +41,7 @@ router.post("/login", async (req, res) => {
       const payload = {
         id: user.id,
         username: user.username,
-        isAdmin: user.is_admin,
+        isAdmin: user.is_admin || false,
       };
       const token = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "1h",
@@ -60,12 +50,8 @@ router.post("/login", async (req, res) => {
       res.cookie("token", token, { httpOnly: true, maxAge: 3600000 });
       res.status(200).redirect("/");
     } else {
-      const message = "Invalid username or password";
-      res.status(401).render("error", {
-        message: message,
-        status: 401,
-        title: `${401} ${message}`,
-      });
+      const error_message = "Invalid username or password";
+      return res.render("login", {error_message: error_message, title: "Login"});
     }
   } catch (err) {
     console.log(err);
@@ -87,12 +73,8 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
       req.file?.path || constants.DEFAULT_PROFILE_AVATAR_PATH;
 
     if (!username || !password) {
-      const message = "Username or password missing";
-      return res.status(400).render("error", {
-        message: message,
-        status: 400,
-        title: `${400} ${message}`,
-      });
+      const error_message = "Username or password missing";
+      return res.redirect("/register?error_message=" + error_message)
     }
     9;
     if (req.cookies.token) {
@@ -106,7 +88,7 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
 
     if (await userModel.getByUsername(username)) {
       const message = "Username already exists";
-      return res.render("register", {title: "Register", error: true, error_message: message});
+      return res.render("register", {title: "Register", error_message: message});
     }
 
     const newUser = new userModel(

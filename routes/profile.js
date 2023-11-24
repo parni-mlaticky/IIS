@@ -39,7 +39,11 @@ router.get("/", authenticate, async (req, res) => {
         title: "404",
       });
     }
-    res.redirect(`/profile/${profileId}`);
+    url_success_message = req.query.success_message ? "success_message=" + req.query.success_message : "";
+    url_error_message = req.query.error_message ? "&error_message=" + req.query.error_message : ""; 
+    url_info_message = req.query.info_message ? "&info_message=" + req.query.info_message : "";
+    res.redirect(`/profile/${profileId}/?${url_success_message}${url_error_message}${url_info_message}`);
+
   } catch (err) {
     console.log(err);
     const message = "Error retrieving profile from database";
@@ -107,7 +111,7 @@ router.get(
           title: "404",
         });
       }
-      res.render("profile/edit", { user: profile, title: "Edit Profile", error: req.query.error || false, error_message: req.query.error_message || "" });
+      res.render("profile/edit", { user: profile, title: "Edit Profile" });
     } catch (err) {
       console.log(err);
       const message = "Error retrieving profile from database";
@@ -135,9 +139,8 @@ router.get("/:id/admin/edit", authenticate, checkLogin, isAdmin, async (req, res
         title: `${403} ${"Error"}`,
       });
     }
-    const error = req.query.error || false;
-    const error_message = req.query.error_message || "";
-    res.render("profile/admin_edit", { user: profile, title: "Edit Profile", error: error, error_message: error_message });
+    const error_message = req.query.error_message || undefined;
+    res.render("profile/admin_edit", { user: profile, title: "Edit Profile" });
   } catch (err) {
     console.log(err);
     res.status(500).render("error", {
@@ -192,7 +195,7 @@ router.put(
         : profile.pwd_hash;
       new_username = req.body.username || profile.username;
       if(new_username !== profile.username && await profileModel.getByUsername(new_username)){
-        return res.redirect("/profile/" + req.params.id + "/edit?" + "error=1" + encodeURIComponent() + "&error_message=" + encodeURIComponent("Username already exists"))
+        return res.redirect("/profile/" + req.params.id + "/edit" + "?error_message=Username already exists");
       };   
 
       new_picture_path = req.file?.path || profile.path_to_avatar;
@@ -206,7 +209,7 @@ router.put(
         profile.is_admin,
       );
       await profileObj.save();
-      res.redirect(`/profile/${req.params.id}`);
+      res.redirect(`/profile/${req.params.id}?success_message=Profile updated successfully`);
     } catch (err) {
       console.log(err);
       const message = "Error updating profile";
@@ -237,7 +240,7 @@ router.put(
         : profile.pwd_hash;
       new_username = req.body.username || profile.username;
       if(new_username !== profile.username && await profileModel.getByUsername(new_username)){
-        return res.redirect("/profile/" + req.params.id + "/admin/edit?" + "error=1" + encodeURIComponent() + "&error_message=" + encodeURIComponent("Username already exists"))
+        return res.redirect("/profile/" + req.params.id + "/admin/edit?error_message=" + encodeURIComponent("Username already exists"))
       }
 
       new_picture_path = req.file?.path || profile.path_to_avatar;
@@ -253,7 +256,8 @@ router.put(
       );
       
       await profileObj.save();
-      res.redirect(`/profile/${profile.id}`);
+      res.redirect(`/profile/${profile.id}` + "?success_message=Profile updated successfully");
+
     } catch (err) {
       console.log(err);
       res.status(500).render("error", {
@@ -276,7 +280,8 @@ router.delete("/:id", authenticate, checkLogin, isAuthorized("user"), async (req
     }
     const profileObject = new profileModel(profile.id, null, null, null, null, null);
     await profileObject.delete();
-    res.redirect("/users");
+    res.redirect("/users?success_message=Profile deleted successfully");
+
   } catch (err) {
     console.log(err);
     const message = "Error deleting profile";
