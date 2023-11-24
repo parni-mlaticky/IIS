@@ -196,11 +196,28 @@ router.delete(
   },
 );
 
+router.get("/:threadid/comments/:id", authenticate, checkLogin, isAuthorized("comment"), async (req, res) => {
+  const commentGroup = await commentModel.getCommentThreadGroup(req.params.id);
+  if (commentGroup.length != 1) {
+      const message = "Error editing comment";
+      return res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
+      });
+  }
+
+  res.status(200).render("comments", {
+    title: "xd",
+    commentGroup: commentGroup[0],
+  });
+});
+
 router.post("/:id/comments", authenticate, checkLogin, isAuthorized("thread"), async (req, res) => {
   try {
     if (!req.body.content) {
       const message = "Cannot post empty comment";
-      res.status(500).render("error", {
+      return res.status(500).render("error", {
         message: message,
         status: 500,
         title: `${500} ${message}`,
@@ -234,22 +251,29 @@ router.post("/:id/comments", authenticate, checkLogin, isAuthorized("thread"), a
 });
 
 router.put(
-  "/:id/comments/:commentsid",
+  "/:threadid/comments/:id/",
   authenticate,
   isAuthorized("comment"),
   async (req, res) => {
     try {
-      const comment = await commentModel.getById(req.params.commentsid);
-      if (!comment) {
+      const comment = await commentModel.getById(req.params.id);
+      if (comment.length != 1) {
         return res.status(404).render("404", {
           message: "Comment not found",
           url: req.url,
           title: "404",
         });
       }
-      comment.content = req.body.content;
-      await comment.save();
-      res.redirect(`/threads/${req.params.id}`);
+      const newComment = new commentModel(
+        comment[0].id,
+        comment[0].thread_id,
+        comment[0].author_id,
+        req.body.content,
+        comment[0].post_time,
+        true
+      );
+      await newComment.save();
+      res.redirect(`/threads/${req.params.threadid}`);
     } catch (err) {
       console.log(err);
       const message = "Error updating comment";
@@ -263,25 +287,28 @@ router.put(
 );
 
 router.delete(
-  "/:id/comments/:commentsid",
+  "/:threadid/comments/:id",
   authenticate,
   isAuthorized("comment"),
   async (req, res) => {
     try {
-      const comment = await commentModel.getById(req.params.commentsid);
-      if (!comment) {
+      const comment = await commentModel.getById(req.params.id);
+      if (comment.length != 1) {
         return res.status(404).render("404", {
           message: "Comment not found",
           url: req.url,
           title: "404",
         });
       }
-      await comment.delete();
-      res.redirect(`/threads/${req.params.id}`);
+      const newComment = new commentModel(
+        comment[0].id
+      );
+      await newComment.delete();
+      res.redirect(`/threads/${req.params.threadid}`);
     } catch (err) {
       console.log(err);
       const message = "Error deleting comment";
-      res.status(500).render("error", {
+      return res.status(500).render("error", {
         message: message,
         status: 500,
         title: `${500} ${message}`,

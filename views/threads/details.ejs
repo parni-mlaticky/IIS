@@ -12,6 +12,9 @@
       </a>
       <h1><%= thread.title %></h1>
       <p><%= thread.content %></p>
+      <% if(thread.edited) {%>
+          <i>edited</i>
+      <% } %>
       <%- include('../partials/user.ejs', { user_id: thread.user_id, path_to_avatar: thread.path_to_avatar, username: thread.username, details: thread.post_time }) %>
       <hr>
     <% if (user && user.id == thread.author_id) {%>
@@ -38,7 +41,14 @@
     <% for (let i = 0; i < comments.length; i++) { %>
         <div class="comment">
             <%- include('../partials/user.ejs', { user_id: comments[i].author_id, path_to_avatar: comments[i].path_to_avatar, username: comments[i].username, details: comments[i].post_time }) %>
+            <% if(comments[i].edited) {%>
+                <i>edited</i>
+            <% } %>
             <p><%= comments[i].content %></p>
+            <a href="/threads/<%= comments[i].thread_id %>/comments/<%= comments[i].comment_id %>">edit</a>
+            <form action="/threads/<%= thread.parent_id %>/comments/<%= comments[i].comment_id %>/?_method=DELETE" method="post" if="form" enctype="x-www-form-urlencoded">
+                <input type="submit" value="delete">
+            </form>
             <hr>
         </div>
     <% } %>
