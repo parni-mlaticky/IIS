@@ -4,6 +4,7 @@ const groupModel = require("../models/Group");
 const userModel = require("../models/User");
 const userGroupModel = require("../models/User_Group_role");
 const userCommentVoteModel = require("../models/User_Comment_vote");
+const threadModel = require("../models/Thread")
 const NotificationModel = require("../models/Notification");
 const { GroupRole, Visibility, NotificationType, DEFAULT_GROUP_AVATAR_PATH } = require("../constants")
 
@@ -71,18 +72,17 @@ router.get("/:id", checkLogin, async (req, res) => {
 
     let user_can_edit = false;
     if (req.userData) {
-      const user_group = await userGroupModel.getGroupOwnershipByUserId(
+        user_can_edit = await userGroupModel.isUserGroupOwner(
         req.userData.id,
         group[0].id,
       );
-      user_can_edit = user_group.length == 1;
     }
 
     let ownerUser = null;
     let moderatorUsers = [];
     let members = [];
 
-    const groupMembers = await User_Group_role.getGroupMembers(group[0].id);
+    const groupMembers = await userGroupModel.getGroupMembers(group[0].id);
 
     groupMembers.forEach((member) => {
       switch (member.role) {
@@ -98,7 +98,7 @@ router.get("/:id", checkLogin, async (req, res) => {
       }
     });
 
-    console.log(ownerUser, moderatorUsers, members);
+    const threads_with_content = await threadModel.getAllWithContentUser(group[0].id);
 
     res.render("groups/detail", {
       group: group[0],
@@ -108,6 +108,7 @@ router.get("/:id", checkLogin, async (req, res) => {
       owner: ownerUser,
       moderators: moderatorUsers,
       members: members,
+      threads: threads_with_content,
     });
   } catch (err) {
     console.log(err);
@@ -220,62 +221,54 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
   }
 });
 
-router.put(
-  "/:id",
-  authenticate,
-  checkLogin,
-  isAuthorized("group"),
-  upload.single("avatar"),
-  async (req, res) => {
-    try {
-      const group = await groupModel.getById(req.params.id);
-      if (!group) {
-        const message = "Group not found";
-        return res.status(404).render("404", {
-          message: message,
-          url: req.url,
-          title: `${404} ${message}`,
-        });
-      }
+router.put("/:id", authenticate, checkLogin, isAuthorized("group"), upload.single("avatar"), async (req, res) => {
+  try {
+    const group = await groupModel.getById(req.params.id);
 
-      // Hide non-public groups from unlogged-in users.
-      if (!req.userData && group[0].visibility != Visibility.PUBLIC) {
-        return res.status(404).send("Group not found");
-      }
-
-      const sameName = await groupModel.getByName(req.body.name);
-      if (sameName.length != 0) {
-        return res.status(500).send("Group with this name already exists");
-      }
-
-      group[0].name = req.body.name || group[0].name;
-      group[0].description = req.body.description || group[0].description;
-      group[0].path_to_avatar = req.file
-        ? req.file.path
-        : group[0].path_to_avatar;
-      group[0].visibility = req.body.visibility || group[0].visibility;
-
-      const updatedGroup = new groupModel(
-        req.params.id,
-        group[0].name,
-        group[0].description,
-        group[0].path_to_avatar,
-        group[0].visibility,
-      );
-      await updatedGroup.save();
-
-      res.redirect(`/groups/${req.params.id}`);
-    } catch (err) {
-      console.log(err);
-      const message = "Error updating group";
-      res.status(500).render("error", {
+    if (!group) {
+      const message = "Group not found";
+      return res.status(404).render("404", {
         message: message,
         status: 500,
         title: `${500} ${message}`,
       });
     }
-  },
-);
+
+    // Hide non-public groups from unlogged-in users.
+    if (!req.userData && group[0].visibility != Visibility.PUBLIC) {
+      return res.status(404).send("Group not found");
+    }
+
+    const sameName = await groupModel.getByName(req.body.name);
+    if (sameName.length != 0) {
+      return res.status(500).send("Group with this name already exists");
+    }
+
+    group[0].name = req.body.name || group[0].name;
+    group[0].description = req.body.description || group[0].description;
+    group[0].path_to_avatar = req.file ? req.file.path : group[0].path_to_avatar;
+    group[0].visibility = req.body.visibility || group[0].visibility;
+
+    const updatedGroup = new groupModel(
+      req.params.id,
+      group[0].name,
+      group[0].description,
+      group[0].path_to_avatar,
+      group[0].visibility,
+    );
+    await updatedGroup.save();
+
+    res.redirect(`/groups/${req.params.id}`);
+  } catch (err) {
+    console.log(err);
+    const message = "Error updating group";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
+  }
+});
 
 router.delete("/:id", authenticate, isAuthorized("group"), async (req, res) => {
   try {

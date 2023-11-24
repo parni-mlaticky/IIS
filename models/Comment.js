@@ -11,6 +11,9 @@ class Comment {
   }
   async save() {
     try {
+      if (this.id) {
+        return this.update();
+      }
       const [rows] = await db.query(
         "INSERT INTO Comment (thread_id, author_id, content, post_time, edited) VALUES (?, ?, ?, ?, ?)",
         [
@@ -21,6 +24,7 @@ class Comment {
           this.edited,
         ],
       );
+      this.id = rows.insertId;
       return rows;
     } catch (err) {
       console.log(err);
@@ -62,10 +66,11 @@ class Comment {
       const [rows] = await db.query(
         "UPDATE Comment SET thread_id = ?, author_id = ?, content = ?, post_time = ?, edited = ? WHERE id = ?",
         [
-          this.name,
-          this.description,
-          this.picture_path,
-          this.visibility,
+          this.thread_id,
+          this.author_id,
+          this.content,
+          this.post_time,
+          this.edited,
           this.id,
         ],
       );
