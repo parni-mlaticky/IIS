@@ -48,6 +48,17 @@ class Thread {
     }
   }
 
+  static async getCommentsUser(thread_id) {
+    try {
+      const [rows] = await db.query(
+        "SELECT * FROM Comment c JOIN Registered_user u ON c.author_id = u.id WHERE thread_id = ?",
+        [thread_id],
+      );
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   static async getAll() {
     try {
