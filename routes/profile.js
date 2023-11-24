@@ -13,6 +13,8 @@ const {
 } = require("../middlewares/auth");
 module.exports = router;
 
+
+
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "public/");
@@ -67,9 +69,9 @@ router.get("/:id", async (req, res) => {
     ) {
       const message = "Profile is private";
       return res.status(403).render("profile/private_profile", {
-        message: message,
+        message: "This profile is private",
         status: 403,
-        title: `${403} ${message}`,
+        title: `${403} ${"This profile is private"}`,
       });
     }
 
@@ -105,7 +107,7 @@ router.get(
           title: "404",
         });
       }
-      res.render("profile/edit", { user: profile, title: "Edit Profile" });
+      res.render("profile/edit", { user: profile, title: "Edit Profile", error: req.query.error || false, error_message: req.query.error_message || "" });
     } catch (err) {
       console.log(err);
       const message = "Error retrieving profile from database";
@@ -118,7 +120,7 @@ router.get(
   },
 );
 
-router.get("/:id/admin/edit", authenticate, isAdmin, async (req, res) => {
+router.get("/:id/admin/edit", authenticate, checkLogin, isAdmin, async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
     if (!profile) {
@@ -133,7 +135,9 @@ router.get("/:id/admin/edit", authenticate, isAdmin, async (req, res) => {
         title: `${403} ${"Error"}`,
       });
     }
-    res.render("profile/admin_edit", { user: profile });
+    const error = req.query.error || false;
+    const error_message = req.query.error_message || "";
+    res.render("profile/admin_edit", { user: profile, title: "Edit Profile", error: error, error_message: error_message });
   } catch (err) {
     console.log(err);
     res.status(500).render("error", {
@@ -187,6 +191,10 @@ router.put(
         ? await bcrypt.hash(req.body.new_password, 10)
         : profile.pwd_hash;
       new_username = req.body.username || profile.username;
+      if(new_username !== profile.username && await profileModel.getByUsername(new_username)){
+        return res.redirect("/profile/" + req.params.id + "/edit?" + "error=1" + encodeURIComponent() + "&error_message=" + encodeURIComponent("Username already exists"))
+      };   
+
       new_picture_path = req.file?.path || profile.path_to_avatar;
       new_visibility = req.body.visibility || profile.visibility;
       const profileObj = new profileModel(
@@ -198,7 +206,6 @@ router.put(
         profile.is_admin,
       );
       await profileObj.save();
-      console.log(profileObj);
       res.redirect(`/profile/${req.params.id}`);
     } catch (err) {
       console.log(err);
@@ -229,9 +236,12 @@ router.put(
         ? await bcrypt.hash(req.body.new_password, 10)
         : profile.pwd_hash;
       new_username = req.body.username || profile.username;
+      if(new_username !== profile.username && await profileModel.getByUsername(new_username)){
+        return res.redirect("/profile/" + req.params.id + "/admin/edit?" + "error=1" + encodeURIComponent() + "&error_message=" + encodeURIComponent("Username already exists"))
+      }
+
       new_picture_path = req.file?.path || profile.path_to_avatar;
       new_visibility = req.body.visibility || profile.visibility;
-      console.log("FORM_ADMIN", req.body.is_admin);
       new_is_admin = req.body.is_admin == "true" || false;
       const profileObj = new profileModel(
         req.params.id,
@@ -241,6 +251,7 @@ router.put(
         visibility_to_id(new_visibility),
         new_is_admin,
       );
+      
       await profileObj.save();
       res.redirect(`/profile/${profile.id}`);
     } catch (err) {
@@ -253,7 +264,7 @@ router.put(
   },
 );
 
-router.delete("/:id", authenticate, isAuthorized("user"), async (req, res) => {
+router.delete("/:id", authenticate, checkLogin, isAuthorized("user"), async (req, res) => {
   try {
     const profile = await profileModel.getById(req.params.id);
     if (!profile) {
@@ -263,8 +274,9 @@ router.delete("/:id", authenticate, isAuthorized("user"), async (req, res) => {
         title: "404",
       });
     }
-    await profile.delete();
-    res.redirect("/");
+    const profileObject = new profileModel(profile.id, null, null, null, null, null);
+    await profileObject.delete();
+    res.redirect("/users");
   } catch (err) {
     console.log(err);
     const message = "Error deleting profile";

@@ -5,7 +5,7 @@ const groupsRoute = require("./groups");
 const threadsRoute = require("./threads");
 const usersRoute = require("./users");
 const notificationRoute = require("./notifications");
-
+const { checkLogin } = require("../middlewares/auth");
 const router = express.Router();
 
 router.use("/auth", authRoute);
@@ -23,8 +23,11 @@ router.get("/login", (req, res) => {
   res.render("login", { title: "Login", message: "Hello, EJS!" });
 });
 
-router.get("/register", (req, res) => {
-  res.render("register", { title: "Register", message: "Hello, EJS!" });
+router.get("/register", checkLogin, (req, res) => {
+  if(req.isLogged){
+    res.redirect("/profile", { title: "Profile" , error: true, error_message: "You are already logged in"});
+  }
+  res.render("register", { title: "Register", error: false ,error_message: "" });
 });
 
 router.get("/logout", (req, res) => {

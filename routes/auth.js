@@ -6,6 +6,7 @@ const userModel = require("../models/User");
 const multer = require("multer");
 const path = require("path");
 const constants = require("../constants");
+const nunjucks = require("nunjucks");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -18,6 +19,8 @@ const storage = multer.diskStorage({
     );
   },
 });
+
+
 
 const upload = multer({ storage: storage });
 
@@ -103,11 +106,7 @@ router.post("/register", upload.single("avatar"), async (req, res) => {
 
     if (await userModel.getByUsername(username)) {
       const message = "Username already exists";
-      return res.status(409).render("error", {
-        message: message,
-        status: 409,
-        title: `${409} ${message},`,
-      });
+      return res.render("register", {title: "Register", error: true, error_message: message});
     }
 
     const newUser = new userModel(
@@ -143,5 +142,5 @@ router.post("/logout", (req, res) => {
 
 router.get("/logout", (req, res) => {
   res.clearCookie("token");
-  res.json({ message: "User logged out successfully" });
+  res.redirect("/");
 });

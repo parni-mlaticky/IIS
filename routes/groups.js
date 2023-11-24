@@ -89,6 +89,7 @@ router.get("/:id", async (req, res) => {
         req.params.id,
       );
       user_can_join = user_group.length == 0;
+      user_can_edit = user_group.length == 1 || req.isAdmin;
     }
 
     let user_can_apply_for_moderator = false;
@@ -112,8 +113,10 @@ router.get("/:id", async (req, res) => {
     let members = [];
 
     const groupMembers = await userGroupModel.getGroupMembers(group[0].id);
+    console.log(groupMembers);
 
     groupMembers.forEach((member) => {
+      console.log(member);
       switch (member.role) {
         case GroupRole.OWNER:
           ownerUser = member;
@@ -143,6 +146,7 @@ router.get("/:id", async (req, res) => {
       members: members,
       threads: threads_with_content,
     });
+
   } catch (err) {
     console.log(err);
     const message = "Error retrieving group from database";
@@ -268,6 +272,7 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
     );
     await newUserGroupRole.save();
     res.redirect(`/groups/${newGroupID}`);
+
   } catch (err) {
     console.log(err);
     const message = "Error creating group";
