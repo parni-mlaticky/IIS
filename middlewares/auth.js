@@ -11,8 +11,9 @@ const checkLogin = (req, res, next) => {
     if (token) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.isLogged = true;
-      req.userData = decoded; // You can use this to access user data in your templates
+      req.userData = decoded; 
       req.isAdmin = decoded.isAdmin;
+      req.userData.isAdmin = decoded.isAdmin;
     } else {
       req.isLogged = false;
     }
@@ -38,7 +39,7 @@ const authenticate = (req, res, next) => {
   }
 };
 
-const isAdmin = (req, res, next) => {
+const isAdmin = async (req, res, next) => {
   if (req.userData?.isAdmin) {
     next();
   } else {
@@ -74,13 +75,8 @@ function isAuthorized(entityType) {
           const user = await userModel.getById(resourceId);
           ownerUserId = user.id;
           break;
-        case "userCommentVote":
-          const userCommentVote =
-            await userCommentVoteModel.getById(resourceId);
-          ownerUserId = userCommentVote.user_id;
-          break;
       }
-      if (userId === ownerUserId) {
+      if (userId === ownerUserId || req.isAdmin) {
         next();
       } else {
         return res.status(403).json({ message: "Authorization failed" });

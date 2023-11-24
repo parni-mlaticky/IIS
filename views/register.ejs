@@ -1,5 +1,8 @@
     <%- include('partials/navbar') %>
 <h1>Register</h1>
+  <% if(error) { %>
+    <h2 style="color:red; border-style:solid; border-color:red"> Registration failed: <%= error_message %> </h2>
+  <% } %>
   <form action="/auth/register" method="post", enctype="multipart/form-data">
     <input type="text" name="username" placeholder="username" /> <br>
     <label for="avatar">Avatar</label>
