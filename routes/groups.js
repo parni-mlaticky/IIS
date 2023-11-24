@@ -5,11 +5,7 @@ const userModel = require("../models/User");
 const userGroupModel = require("../models/User_Group_role");
 const userCommentVoteModel = require("../models/User_Comment_vote");
 const NotificationModel = require("../models/Notification");
-const {
-  Visibility,
-  GroupRole,
-  NotificationType,
-} = require("../constants");
+const { GroupRole, Visibility, NotificationType, DEFAULT_GROUP_AVATAR_PATH } = require("../constants")
 
 const {
   authenticate,
@@ -186,10 +182,9 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
     if (
       !req.body.name ||
       !req.body.description ||
-      !req.body.visibility ||
-      !req.file.path
+      !req.body.visibility
     ) {
-      const message = "All form fileds must be filled";
+      const message = "All form fields must be filled";
       return res.status(500).render("error", {
         message: message,
         status: 500,
@@ -201,7 +196,7 @@ router.post("/", authenticate, upload.single("avatar"), async (req, res) => {
       null,
       req.body.name,
       req.body.description,
-      req.file.path,
+      req.file?.path || DEFAULT_GROUP_AVATAR_PATH,
       req.body.visibility,
     );
 
@@ -293,7 +288,10 @@ router.delete("/:id", authenticate, isAuthorized("group"), async (req, res) => {
         title: `${404} ${message}`,
       });
     }
-    await group.delete();
+
+    const groupObject = new groupModel(req.params.id, null, null, null, null);
+    await groupObject.delete();
+
     res.redirect("/groups");
   } catch (err) {
     console.log(err);
