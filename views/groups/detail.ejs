@@ -34,7 +34,7 @@
       <% } %>
     <% if (user_can_edit) { %>
       <h2>Edit group</h2>
-      <form action="/groups/<%= group.id %>/?_method=PUT" method="post", if="form" enctype="multipart/form-data">
+      <form action="/groups/<%= group.id %>/?_method=PUT" method="post" if="form" enctype="multipart/form-data">
         <p><i>Empty fields will be ignored.</i></p>
         <input type="hidden" name="_method" value="PUT">
         <label for="name">New name: </label>
@@ -85,18 +85,14 @@
     </script>
   <div>
     <% for (let i = 0; i < threads.length; i++) { %>
-      <h2><%=  %></h2>
-      <p clss="commentInfo"> <a href="/profile/<% threads[i].user_id %>"><img class="profilePicture" src="/<%= threads[i].path_to_avatar %>" height="40px">
-        <%= threads[i].username %></a> -
-        <i><%= threads[i].post_time %></i>
-      </p>
+      <%- include('../partials/user.ejs', { user_id: threads[i].user_id, path_to_avatar: threads[i].path_to_avatar, username: threads[i].username, details: threads[i].post_time }) %>
       <% if (threads[i].edited) { %>
         <p>edited</p>
       <% } %>
 
-      <a href="/threads/<%= threads[i].thread_id %>"><h3><%= threads[i].title %></h3></a>
+      <a href="/threads/<%= threads[i].parent_id %>"><h3><%= threads[i].title %></h3></a>
       <p class="commentContent"><%= threads[i].content %></p>
-      <a href="/threads/<%= threads[i].thread_id %>">Open thread</a>
+      <a href="/threads/<%= threads[i].parent_id %>">Open thread</a>
       <hr>
     <% } %>
   </div>

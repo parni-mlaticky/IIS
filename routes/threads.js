@@ -1,23 +1,42 @@
 const express = require("express");
 const router = express.Router();
 const threadModel = require("../models/Thread");
+const groupModel = require("../models/Group");
 const commentModel = require("../models/Comment");
 const userCommentVoteModel = require("../models/User_Comment_vote");
-const { authenticate, isAuthorized } = require("../middlewares/auth");
+const { authenticate, isAuthorized, checkLogin } = require("../middlewares/auth");
+const { getThreadWithContentUser } = require("../models/Thread");
+const { Visibility } = require("../constants")
 
 module.exports = router;
 
-router.get("/:groupid", async (req, res) => {
+router.get("/:groupid", checkLogin, async (req, res) => {
   try {
-    const threads = await threadModel.getByGroupId(req.params.groupid);
-    if (!threads) {
-      return res.status(404).render("404", {
-        message: "Threads not found",
-        url: req.url,
-        title: "404",
+    const thread_with_content = await threadModel.getThreadWithContentUser(req.params.groupid);
+    if (thread_with_content.length != 1) {
+      return res.status(404).render("error", {
+        message: "Thread not found",
+        status: 404,
+        title: `${404} Thread not found`
       });
     }
-    res.render("threads", { threads });
+    const group = await groupModel.getById(thread_with_content[0].group_id);
+
+    if (!req.userData && thread_with_content.visibility != Visibility.PUBLIC) {
+      return res.status(404).render("error", {
+        message: "Thread not found",
+        status: 404,
+        title: `${404} Thread not found`
+      });
+    }
+
+    return res.status(200).render("threads/details", {
+      title: `${group[0].name}: ${thread_with_content[0].title}`,
+      thread: thread_with_content[0],
+      group: group[0],
+      user: req.userData
+    });
+
   } catch (err) {
     console.log(err);
     const message = "Error retrieving threads from database";
@@ -31,13 +50,11 @@ router.get("/:groupid", async (req, res) => {
 
 router.post("/:groupid", authenticate, async (req, res) => {
   try {
-    console.log("sanity check hello world");
-    console.log(req.body);
-
     if (!req.body.content || !req.body.title) {
       return res.status(500).send("Thread all fields must be filled.");
     }
 
+    // TODO CHECK membership permissions
     const newComment = new commentModel(
       null,
       null,
@@ -55,10 +72,6 @@ router.post("/:groupid", authenticate, async (req, res) => {
       commentId,
     );
     const createdThread = await newThread.save();
-    const threadId = createdThread.insertId;
-    console.log("Sanity check", threadId);
-    newComment.thread_id = threadId;
-    newComment.save();
 
     res.redirect(`/groups/${req.params.groupid}`);
   } catch (err) {
@@ -74,20 +87,54 @@ router.post("/:groupid", authenticate, async (req, res) => {
 
 router.put("/:id", authenticate, isAuthorized("thread"), async (req, res) => {
   try {
-    const thread = await threadModel.getById(req.params.id);
-    if (!thread) {
-      return res.status(404).render("404", {
-        message: "Thread not found",
-        url: req.url,
-        title: "404",
+    const thread_with_content = await getThreadWithContentUser(req.params.id);
+    if (thread_with_content.length != 1) {
+      const message = "Thread not found"
+      return res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
       });
     }
-    thread.title = req.body.title;
-    thread.content = req.body.content;
-    thread.picture_path = req.body.picture_path;
-    thread.group_id = req.body.group_id;
-    await thread.save();
+
+    if (!req.userData && thread_with_content.visibility != Visibility.PUBLIC) {
+      return res.status(404).render("error", {
+        message: "Thread not found",
+        status: 404,
+        title: `${404} Thread not found`
+      });
+    }
+
+    if (!req.body.content && !req.body.title) {
+      const message = "Specify at least one change"
+      return res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
+      });
+    }
+
+    const newComment = new commentModel(
+      thread_with_content[0].content_id,
+      thread_with_content[0].thread_id,
+      thread_with_content[0].author_id,
+      req.body.content || thread_with_content[0].content,
+      thread_with_content[0].post_time,
+      true
+    );
+    newComment.save();
+
+    const newThread = new threadModel(
+      thread_with_content[0].parent_id,
+      thread_with_content[0].group_id,
+      req.body.title || thread_with_content[0].title,
+      thread_with_content[0].content_id
+    );
+    newThread.save();
+
+    const createdComment = await newComment.save();
     res.redirect(`/threads/${req.params.id}`);
+
   } catch (err) {
     console.log(err);
     message = "Error updating thread";
