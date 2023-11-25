@@ -63,11 +63,8 @@ router.post("/:groupid", authenticate, checkLogin, async (req, res) => {
       return res.redirect(`/groups/${req.params.groupid}?error_message=To create a thread, please fill out the title and the content`);
     }
 
-    let isMember = false;
-    const thread_with_content = await threadModel.getThreadWithContentUser(req.params.groupid);
-    if (req.userData) {
-      isMember = await userGroupModel.isUserGroupMember(req.userData.id, thread_with_content.group_id);
-    }
+    const user_group_role = await userGroupModel.getByUserIdAndGroupId(req.userData?.id, req.params.groupid);
+    let isMember = user_group_role.length > 0;
 
     if (!isMember) {
       return res.redirect(`/groups/${req.params.groupid}?error_message=You are not a member of this group so you are not allowed to post a thread`);

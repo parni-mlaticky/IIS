@@ -74,40 +74,21 @@ router.get("/:id", async (req, res) => {
       return res.redirect("/groups?error_message=This group is not available for guests");
     }
 
-    let user_can_edit = false;
-    console.log(req.userData);
-    if (req.userData) {
-      user_can_edit = await userGroupModel.isUserGroupOwner(
-        req.userData.id,
-        group[0].id,
-      );
-    }
+    const user_role_in_group = await userGroupModel.getByUserIdAndGroupId(
+      req.userData?.id,
+      group[0].id,
+    );
 
-    let user_can_join = false;
-    if (req.userData) {
-      const user_group = await userGroupModel.getByUserIdAndGroupId(
-        req.userData.id,
-        req.params.id,
-      );
-      user_can_join = user_group.length == 0;
-      user_can_edit = (user_group.length == 1 && user_group[0].role > GroupRole.MODERATOR) || req.isAdmin;
-    }
+    const notif = await NotificationModel.getByUserIdAndGroupId(
+      req.userData?.id,
+      group[0].id,
+    );
 
-    let user_can_apply_for_moderator = false;
-    if (req.userData) {
-      const user_group = await userGroupModel.getByUserIdAndGroupId(
-        req.userData.id,
-        req.params.id,
-      );
-      const notif = await NotificationModel.getByUserIdAndGroupId(
-        req.userData.id,
-        req.params.id,
-      );
-      user_can_apply_for_moderator =
-        user_group.length != 0 &&
-        user_group[0].role == GroupRole.MEMBER &&
-        notif.length == 0;
-    }
+    let user_can_edit = user_role_in_group.length == 1 && user_role_in_group[0].role > GroupRole.MODERATOR || req.userData?.isAdmin;
+    let user_can_join = user_role_in_group.length == 0;
+    let user_can_post = user_role_in_group.length == 1 && user_role_in_group[0].role >= GroupRole.MEMBER || req.userData?.isAdmin;
+    let user_can_apply_for_moderator = user_role_in_group.length == 1 && user_role_in_group[0].role == GroupRole.MEMBER && notif.length == 0;
+    let user_can_invite = user_role_in_group.length == 1 && user_role_in_group[0].role > GroupRole.MEMBER || req.userData?.isAdmin;
 
     let ownerUser = null;
     let moderatorUsers = [];
@@ -134,16 +115,6 @@ router.get("/:id", async (req, res) => {
       group[0].id,
     );
 
-    let canInvite = false;
-    if (req.userData) {
-      canInvite =
-        req.userData.id == ownerUser.user_id ||
-        req.isAdmin ||
-        moderatorUsers.some(
-          (moderator) => moderator.user_id == req.userData.id,
-        );
-    }
-
     res.render("groups/detail", {
       group: group[0],
       user: req.userData,
@@ -151,12 +122,12 @@ router.get("/:id", async (req, res) => {
       user_can_edit,
       user_can_join,
       user_can_apply_for_moderator,
-      canInvite,
+      user_can_invite,
+      user_can_post,
       owner: ownerUser,
       moderators: moderatorUsers,
       members: members,
       threads: threads_with_content,
-      is_member: members.some((member) => member.user_id == req.userData?.id),
     });
 
   } catch (err) {
@@ -393,8 +364,6 @@ router.post("/:id/request_moderator", authenticate, async (req, res) => {
       `${applicant.username} requested to be a moderator of ${group[0].name}`,
     );
     await newNotification.save();
-
-    console.log(newNotification);
 
     res.redirect(`/groups/${req.params.id}`);
   } catch (err) {
