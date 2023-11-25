@@ -48,10 +48,30 @@ class Thread {
     }
   }
 
-  static async getCommentsUser(thread_id) {
+  static async getCommentsUserVote(thread_id) {
     try {
       const [rows] = await db.query(
-        "SELECT *, c.id AS comment_id FROM Comment c JOIN Registered_user u ON c.author_id = u.id WHERE thread_id = ?",
+        `
+          SELECT
+              c.thread_id,
+              u.id AS author_id,
+              c.content,
+              c.post_time,
+              c.edited,
+              u.id as user_id,
+              u.username,
+              u.path_to_avatar,
+              u.is_admin,
+              c.id AS comment_id,
+              COALESCE(SUM(v.score), 0) AS score,
+              vv.score AS user_score
+          FROM Comment c
+          LEFT JOIN Registered_user u ON c.author_id = u.id
+          LEFT JOIN User_Comment_vote v ON c.id = v.comment_id
+          LEFT JOIN User_Comment_vote vv ON vv.comment_id = c.id AND vv.user_id = 6
+          WHERE c.thread_id = ?
+          GROUP BY c.thread_id, u.id, c.content, c.post_time, c.edited, u.username, u.path_to_avatar, u.is_admin, c.id;
+        `,
         [thread_id],
       );
       return rows;

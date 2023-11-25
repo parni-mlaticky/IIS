@@ -7,7 +7,8 @@ const userGroupModel = require("../models/User_Group_role");
 const userCommentVoteModel = require("../models/User_Comment_vote");
 const { authenticate, isAuthorized, checkLogin } = require("../middlewares/auth");
 const { getThreadWithContentUser } = require("../models/Thread");
-const { Visibility } = require("../constants")
+const { Visibility } = require("../constants");
+const voteModel = require("../models/User_Comment_vote");
 
 module.exports = router;
 
@@ -37,14 +38,14 @@ router.get("/:groupid", checkLogin, async (req, res) => {
       isMember = isMember || req.userData.isAdmin;
     }
 
-    const threadComments = await threadModel.getCommentsUser(req.params.groupid);
+    const threadComments = await threadModel.getCommentsUserVote(req.params.groupid);
     return res.status(200).render("threads/details", {
       title: `${group[0].name}: ${thread_with_content[0].title}`,
       thread: thread_with_content[0],
       group: group[0],
       user: req.userData,
       comments: threadComments,
-      isMember
+      isMember,
     });
 
   } catch (err) {
@@ -335,15 +336,54 @@ router.delete(
 router.post(
   "/:id/comments/:commentsid/vote",
   authenticate,
+  checkLogin,
   async (req, res) => {
     try {
-      const newVote = new userCommentVoteModel(
-        null,
-        req.userData.id,
-        req.params.commentsid,
-        req.body.vote,
-      );
-      await newVote.save();
+      // Check that user is logged in
+      if (!req.userData) {
+        const message = "You have to log in before you can vote";
+        return res.status(500).render("error", {
+          message: message,
+          status: 500,
+          title: `${500} ${message}`,
+        });
+      }
+      
+      // Check that the user doesn't own the comment
+      const threadComments = await threadModel.getCommentsUserVote(req.params.groupid);
+      if (req.userData.id == threadComments.author_id) {
+        const message = "You cannot rate your own comment";
+        return res.status(500).render("error", {
+          message: message,
+          status: 500,
+          title: `${500} ${message}`,
+        });
+      }
+
+      // Try to find existing vote
+      // If not, instantiate new one
+      // In the end I am left with one vote object
+      let vote = await voteModel.getByUserCommentId(req.userData.id, req.params.commentsid);
+      let newVote;
+      if (vote) {
+        const score = vote.score == req.body.score ? 0 : req.body.score;
+        newVote = new voteModel (
+          vote.id,
+          req.userData.id,
+          req.params.commentsid,
+          score,
+        );
+      }
+      else {
+        newVote = new voteModel (
+          null,
+          req.userData.id,
+          req.params.commentsid,
+          req.body.score
+        );
+      }
+      newVote.save();
+
       res.redirect(`/threads/${req.params.id}`);
     } catch (err) {
       console.log(err);
@@ -356,36 +396,6 @@ router.post(
     }
   },
 );
-
-router.put(
-  "/:id/comments/:commentsid/vote",
-  authenticate,
-  isAuthorized("userCommentVote"),
-  async (req, res) => {
-    try {
-      const vote = await userCommentVoteModel.getById(req.params.commentsid);
-      if (!vote) {
-        return res.status(404).render("404", {
-          message: "Vote not found",
-          url: req.url,
-          title: "404",
-        });
-      }
-      vote.vote = req.body.vote;
-      await vote.save();
-      res.redirect(`/threads/${req.params.id}`);
-    } catch (err) {
-      console.log(err);
-      const message = "Error updating vote";
-      res.status(500).render("error", {
-        message: message,
-        status: 500,
-        title: `${500} ${message}`,
-      });
-    }
-  },
-);
-
 
 
 
