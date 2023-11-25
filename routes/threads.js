@@ -34,6 +34,7 @@ router.get("/:groupid", checkLogin, async (req, res) => {
     let isMember = false;
     if (req.userData) {
       isMember = await userGroupModel.isUserGroupMember(req.userData.id, thread_with_content[0].group_id);
+      isMember = isMember || req.userData.isAdmin;
     }
 
     const threadComments = await threadModel.getCommentsUser(req.params.groupid);
@@ -66,7 +67,7 @@ router.post("/:groupid", authenticate, checkLogin, async (req, res) => {
     const user_group_role = await userGroupModel.getByUserIdAndGroupId(req.userData?.id, req.params.groupid);
     let isMember = user_group_role.length > 0;
 
-    if (!isMember) {
+    if (!isMember && !req.userData?.isAdmin) {
       return res.redirect(`/groups/${req.params.groupid}?error_message=You are not a member of this group so you are not allowed to post a thread`);
     }
 
@@ -210,8 +211,9 @@ router.get("/:threadid/comments/:id", authenticate, checkLogin, isAuthorized("co
   });
 });
 
-router.post("/:id/comments", authenticate, checkLogin, isAuthorized("thread"), async (req, res) => {
+router.post("/:id/comments", authenticate, checkLogin, async (req, res) => {
   try {
+    // Verify that the comment is not empty
     if (!req.body.content) {
       const message = "Cannot post empty comment";
       return res.status(500).render("error", {
@@ -219,6 +221,22 @@ router.post("/:id/comments", authenticate, checkLogin, isAuthorized("thread"), a
         status: 500,
         title: `${500} ${message}`,
       });
+    }
+
+    // Get thread informaction
+    const thread_with_content = await threadModel.getThreadWithContentUser(req.params.id);
+    if (thread_with_content.length != 1) {
+      return res.status(404).render("error", {
+        message: "Thread not found",
+        status: 404,
+        title: `${404} Thread not found`
+      });
+    }
+
+    // Verify membership
+    let isMember = false;
+    if (req.userData) {
+      isMember = await userGroupModel.isUserGroupMember(req.userData.id, thread_with_content[0].group_id);
     }
 
     if (!req.userData) {
