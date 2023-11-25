@@ -10,6 +10,9 @@ class User_Comment_vote {
 
   async save() {
     try {
+      if (this.id) {
+        return this.update();
+      }
       const [rows] = await db.execute(
         "INSERT INTO User_Comment_vote (user_id, comment_id, score) VALUES (?, ?, ?)",
         [
@@ -42,10 +45,29 @@ class User_Comment_vote {
     }
   }
 
+  static async getByUserCommentId(user_id, comment_id) {
+    try {
+      const [rows] = await db.execute("SELECT * FROM User_Comment_vote WHERE user_id = ? AND comment_id = ?", [user_id, comment_id]);
+      return rows[0];
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  static async getTotal(id) {
+    try {
+      const [rows] = await db.execute("SELECT COALESCE(SUM(score), 0) AS total FROM User_Comment_vote WHERE id = ?", [id]);
+      return rows[0].total;
+    } catch (err) {
+      console.log(err);
+    }
+
+  }
+
   async update() {
     try {
       const [rows] = await db.execute(
-        "UPDATE User_Comment_vote SET used_id = ?, comment_id = ?, score = ? WHERE id = ?",
+        "UPDATE User_Comment_vote SET user_id = ?, comment_id = ?, score = ? WHERE id = ?",
         [
           this.user_id,
           this.comment_id,

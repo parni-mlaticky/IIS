@@ -38,14 +38,20 @@
     </form>
     <hr>
     <% } %>
+
     <% for (let i = 0; i < comments.length; i++) { %>
         <div class="comment">
             <%- include('../partials/user.ejs', { user_id: comments[i].author_id, path_to_avatar: comments[i].path_to_avatar, username: comments[i].username, details: comments[i].post_time }) %>
             <% if(comments[i].edited) {%>
                 <i>edited</i>
             <% } %>
+            <div comment-id="<%= comments[i].comment_id %>">
+              <button class="up_vote <%= comments[i].user_score == 1 && "selected_vote" || "" %>">Up vote</button>
+              <button class="down_vote <%= comments[i].user_score == -1 && "selected_vote" || "" %>">Down vote</button>
+            </div>
             <p><%= comments[i].content %></p>
             <a href="/threads/<%= comments[i].thread_id %>/comments/<%= comments[i].comment_id %>">edit</a>
+            <p><%= comments[i].score %></p>
             <form action="/threads/<%= thread.parent_id %>/comments/<%= comments[i].comment_id %>/?_method=DELETE" method="post" if="form" enctype="x-www-form-urlencoded">
                 <input type="submit" value="delete">
             </form>
@@ -53,5 +59,36 @@
         </div>
         </div>
     <% } %>
+
+    <script>
+     async function vote(comment_id, score) {
+       try {
+        const response = await fetch(`/threads/<%= thread.parent_id %>/comments/${comment_id}/vote`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ score:score }) })
+        window.location.reload();
+       }
+       catch (e) {
+         console.log(e);
+       }
+     }
+
+     document.querySelectorAll(".up_vote").forEach(
+       async (button) => {
+         button.addEventListener("click", async function() {
+          console.log("brih");
+           const comment_id = this.parentNode.getAttribute("comment-id");
+           await vote(comment_id, 1);
+         });
+       }
+     );
+
+     document.querySelectorAll(".down_vote").forEach(
+       async (button) => {
+         button.addEventListener("click", async function() {
+           const comment_id = this.parentNode.getAttribute("comment-id");
+           vote(comment_id, -1);
+         });
+       }
+     );
+    </script>
   </body>
 </html>
