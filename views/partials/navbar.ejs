@@ -2,28 +2,6 @@
 <html>
 <head>
   <title><%= title %></title>
-  <link rel="stylesheet" href="/public/css/nav.css">
-  <link rel="stylesheet" href="/public/css/memberList.css">
-  <link rel="stylesheet" href="/public/css/landingPage.css">
-  <link rel="stylesheet" href="/public/css/notifications.css">
-  <link rel="stylesheet" href="/public/css/forms.css">
 </head>
-<body>
-
-<ul class="topnav">
-  <li><a class="active" href="/">Home</a></li>
-  <li><a href="/groups">Groups</a></li>
-  <li><a href="/users">Users</a></li>
-  
-  <% if (isLogged) { %>
-    <li class="right"><a href="/logout">Logout</a></li>
-    <li class="right"><a href="/profile">Profile</a></li>
-    <li class="right"><a href="/notifications">Notifications</a></li>
-  <% } else { %>
-    <li class="right"><a href="/register">Register</a></li>
-    <li class="right"><a href="/login">Login</a></li>
-  <% } %>
-</ul>
 
 <%- include('./statuses.ejs') %>
-</body>
