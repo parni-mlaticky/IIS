@@ -80,6 +80,7 @@ router.get("/:id", async (req, res) => {
       });
     }
 
+
     if (
       profile.visibility === constants.Visibility.PRIVATE &&
       req.userData?.id !== profile.id &&
@@ -93,12 +94,29 @@ router.get("/:id", async (req, res) => {
       });
     }
 
+
+    const user_object = new profileModel(
+      profile.id,
+      null,
+      null,
+      null,
+      null,
+    );
+
+    const user_number_of_joined_groups = await user_object.getNumberOfJoinedGroups(); 
+    const user_number_of_threads = await user_object.getNumberOfThreads();
+    const user_number_of_comments = await user_object.getNumberOfComments();
+
     res.render("profile", {
       user: profile,
       title: "Profile",
       editable: req.userData?.id === profile.id,
       adminAccess: req.isAdmin,
+      user_number_of_joined_groups,
+      user_number_of_threads,
+      user_number_of_comments,
     });
+
   } catch (err) {
     console.log(err);
     const message = "Error retrieving profile from database";
@@ -202,7 +220,7 @@ router.put(
         );
       }
       if (form_old_password && !passwords_match) {
-        return res.status(400).json({ message: "Old password is incorrect" });
+        return res.redirect("/profile/" + req.params.id + "/edit" + "?error_message=Old password is incorrect");
       }
       const new_password_hash = passwords_match
         ? await bcrypt.hash(req.body.new_password, 10)

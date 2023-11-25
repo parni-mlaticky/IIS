@@ -64,7 +64,7 @@ class Thread {
               u.is_admin,
               c.id AS comment_id,
               COALESCE(SUM(v.score), 0) AS score,
-              vv.score AS user_score
+              MAX(vv.score) AS user_score
           FROM Comment c
           LEFT JOIN Registered_user u ON c.author_id = u.id
           LEFT JOIN User_Comment_vote v ON c.id = v.comment_id
