@@ -1,5 +1,6 @@
 <%- include('../partials/navbar') %>
-  <h1>Grpus</h1>
+<div class="center">
+  <h1>Groups</h1>
     <% if (user) { %>
       <h2>Create group</h2>
       <form action="/groups" method="post", enctype="multipart/form-data">
@@ -25,9 +26,10 @@
             <h2><%= groups[i].name %></h2>
             </a>
             <p><%= groups[i].description %></p>
-            <img src="/<%= groups[i].path_to_avatar %>" height="80px">
+            <img src="/<%= groups[i].path_to_avatar %>" height="150px">
             <hr>
         </div>
     <% } %>
+    </div>
 </body>
 </html>

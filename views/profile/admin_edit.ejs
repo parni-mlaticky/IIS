@@ -1,24 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profile</title>
-    <script>
-      const get_visibility = (visibility) => {
-        switch(visibility) {
-          case 0:
-            return "Private";
-          case 1:
-            return "Registered users";
-          case 2:
-            return "Public";
-        }
-      }
     </script>
-  </head>
-  <body>
     <%- include('../partials/navbar.ejs') %>
+    <div class="center">
     <h1 style="color: red">Editing another user's profile</h1>
 
     <form action="/profile/<%=user.id%>/admin/?_method=PUT" method="post" id="form", enctype="multipart/form-data">
@@ -70,6 +52,7 @@
     </form>
 
     <a href="/profile/<%= user.id %>">Cancel</a>
+    </div>
 
     <script>
       function delete_user() {
@@ -79,6 +62,18 @@
         }
       }
     </script>
+
+    <script>
+      const get_visibility = (visibility) => {
+        switch(visibility) {
+          case 0:
+            return "Private";
+          case 1:
+            return "Registered users";
+          case 2:
+            return "Public";
+        }
+      }
   </body>
 </html>
 

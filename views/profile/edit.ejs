@@ -11,6 +11,7 @@
         }
       }
     </script>
+    <div class="center">
     <h1>Edit Profile</h1>
 
     <form action="/profile/<%=user.id%>/?_method=PUT" method="post" id="form", enctype="multipart/form-data">
@@ -49,6 +50,7 @@
     </form>
 
     <a href="/profile/<%= user.id %>">Cancel</a>
+    </div>
 
     <script>
       form.addEventListener('submit', (e) => {
