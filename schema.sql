@@ -97,3 +97,6 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- login: admin, password: admin42
+INSERT INTO Registered_user (username, path_to_avatar, pwd_hash, visibility, is_admin) VALUES ("admin", "user.jpg", "$2b$10$Rkhm7RvoP0qGqs4zmEo3DOQc.lzhCg2guSIUPdM8FHoGkiN.ueawu", 1, 1);
