@@ -31,6 +31,20 @@ const upload = multer({ storage: storage });
 
 router.get("/", authenticate, async (req, res) => {
   try {
+    // If there is a username in params, redirect to the user's profile
+    console.log("PARAMS: " , req.query);
+    if(req.query.username){
+      const profile = await profileModel.getByUsername(req.query.username);
+      if (!profile) {
+        return res.status(404).render("404", {
+          message: "Profile not found",
+          url: req.url,
+          title: "404",
+        });
+      }
+      return res.redirect("/profile/" + profile.id);
+    }
+
     const profileId = req.userData.id;
     if (!profileId) {
       return res.status(404).render("404", {
@@ -39,6 +53,7 @@ router.get("/", authenticate, async (req, res) => {
         title: "404",
       });
     }
+
     url_success_message = req.query.success_message ? "success_message=" + req.query.success_message : "";
     url_error_message = req.query.error_message ? "&error_message=" + req.query.error_message : ""; 
     url_info_message = req.query.info_message ? "&info_message=" + req.query.info_message : "";
