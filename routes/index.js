@@ -24,7 +24,6 @@ router.get("/login", (req, res) => {
 });
 
 router.get("/register", checkLogin, (req, res) => {
-  console.log(req.isLogged);
   if(req.isLogged){
     res.redirect("/profile?error_message=You are already logged in");
   }

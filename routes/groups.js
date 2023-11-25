@@ -42,9 +42,15 @@ router.get("/", async (req, res) => {
     let groups;
     if (!req.userData) {
       groups = await groupModel.getAllWithVisibility(Visibility.PUBLIC);
-    } else {
+    } 
+    else if(req.userData.isAdmin == 1){
       groups = await groupModel.getAll();
     }
+
+    else {
+      groups = await groupModel.getRegisteredUserDisplayedGroups(req.userData.id);
+    }
+
     // TDOO show to members only if visibility is 1
     res.render("groups", { groups, user: req.userData, title: "Groups" });
   } catch (err) {
@@ -57,6 +63,84 @@ router.get("/", async (req, res) => {
     });
   }
 });
+
+router.post("/:id/kick/:userId", async (req, res) => {
+  try {
+    const group = await groupModel.getById(req.params.id);
+    if (!group) {
+      const message = "Group not found";
+      return res.status(404).render("404", {
+        message: message,
+        url: req.url,
+        title: "404",
+      });
+    }
+    else{
+      const userGroup = await User_Group_role.getByUserIdAndGroupId(req.userData.id, group[0].id);
+      const kickedUserGroup = await User_Group_role.getByUserIdAndGroupId(req.params.userId, group[0].id);
+      const kicked_user = await userModel.getById(req.params.userId);
+      const user_get = await userModel.getById(req.params.userId);
+      const kicked_user_name = user_get.username 
+      if(user_get.id == req.userData.id){
+        return res.redirect(`/groups/${group[0].id}?error_message=You cannot kick yourself from a group`);
+      }
+      else if((userGroup[0].role < GroupRole.MODERATOR || userGroup.length) == 0 && req.userData.isAdmin == 0){
+        return res.redirect(`/groups/${group[0].id}?error_message=You cannot kick a user from a group you do not moderate`);
+      }
+      else{
+        const userGroupObject = new User_Group_role(kickedUserGroup[0].id, null, null, null);
+        await userGroupObject.delete();
+        return res.redirect(`/groups/${group[0].id}?success_message=You have kicked the user ${kicked_user_name} from the group`);
+      }
+    }
+  } catch (err) {
+    console.log(err);
+    const message = "Error retrieving groups from database";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
+  }
+});
+
+
+router.post("/:id/leave", async (req, res) => {
+  try {
+    const group = await groupModel.getById(req.params.id);
+    if (!group) {
+      const message = "Group not found";
+      return res.status(404).render("404", {
+        message: message,
+        url: req.url,
+        title: "404",
+      });
+    }
+    else{
+      const userGroup = await User_Group_role.getByUserIdAndGroupId(req.userData.id, group[0].id);
+      if(userGroup.length == 0){
+        return res.redirect(`/groups/${group[0].id}`);
+      }
+      else if(userGroup[0].role == GroupRole.OWNER){
+        return res.redirect(`/groups/${group[0].id}?error_message=You cannot leave a group you own`);
+      }
+      else{
+        const userGroupObject = new User_Group_role(userGroup[0].id, null, null, null);
+        await userGroupObject.delete();
+        return res.redirect(`/groups/${group[0].id}?success_message=You have left the group`);
+      }
+    }
+  } catch (err) {
+    console.log(err);
+    const message = "Error retrieving groups from database";
+    res.status(500).render("error", {
+      message: message,
+      status: 500,
+      title: `${500} ${message}`,
+    });
+  }
+});
+
 
 router.get("/:id", async (req, res) => {
   try {
@@ -80,15 +164,17 @@ router.get("/:id", async (req, res) => {
     );
 
     const notif = await NotificationModel.getByUserIdAndGroupId(
-      req.userData?.id,
+      req.userData?.id || null,
       group[0].id,
     );
 
-    let user_can_edit = user_role_in_group.length == 1 && user_role_in_group[0].role > GroupRole.MODERATOR || req.userData?.isAdmin;
-    let user_can_join = user_role_in_group.length == 0;
-    let user_can_post = user_role_in_group.length == 1 && user_role_in_group[0].role >= GroupRole.MEMBER || req.userData?.isAdmin;
-    let user_can_apply_for_moderator = user_role_in_group.length == 1 && user_role_in_group[0].role == GroupRole.MEMBER && notif.length == 0;
-    let user_can_invite = user_role_in_group.length == 1 && user_role_in_group[0].role > GroupRole.MEMBER || req.userData?.isAdmin;
+    let user_can_edit = user_role_in_group?.length == 1 && user_role_in_group[0].role > GroupRole.MODERATOR || req.userData?.isAdmin;
+    let user_can_join = user_role_in_group?.length == 0 && group[0].visibility == Visibility.PUBLIC;
+    let user_can_post = user_role_in_group?.length == 1 && user_role_in_group[0].role >= GroupRole.MEMBER || req.userData?.isAdmin;
+    let user_can_apply_for_moderator = (!req.userData?.isAdmin) && (user_role_in_group?.length == 1 && user_role_in_group[0].role == GroupRole.MEMBER && notif.length == 0);
+    let user_is_moderator_or_higher = user_role_in_group?.length == 1 && user_role_in_group[0].role > GroupRole.MEMBER || req.userData?.isAdmin;
+    let user_can_request_join = user_role_in_group?.length == 0 && group[0].visibility == Visibility.REGISTERED;
+    let user_can_leave = user_role_in_group?.length == 1 && user_role_in_group[0].role != GroupRole.OWNER;
 
     let ownerUser = null;
     let moderatorUsers = [];
@@ -97,7 +183,6 @@ router.get("/:id", async (req, res) => {
     const groupMembers = await userGroupModel.getGroupMembers(group[0].id);
 
     groupMembers.forEach((member) => {
-      console.log(member);
       switch (member.role) {
         case GroupRole.OWNER:
           ownerUser = member;
@@ -115,6 +200,7 @@ router.get("/:id", async (req, res) => {
       group[0].id,
     );
 
+
     res.render("groups/detail", {
       group: group[0],
       user: req.userData,
@@ -122,8 +208,11 @@ router.get("/:id", async (req, res) => {
       user_can_edit,
       user_can_join,
       user_can_apply_for_moderator,
-      user_can_invite,
+      user_is_moderator_or_higher,
       user_can_post,
+      // TODO make the requests for joining work
+      user_can_request_join,
+      user_can_leave,
       owner: ownerUser,
       moderators: moderatorUsers,
       members: members,
@@ -159,7 +248,7 @@ router.post("/:id/join", authenticate, async (req, res) => {
       GroupRole.MEMBER,
     );
     await newUserGroupRole.save();
-    res.redirect(`/groups/${req.params.id}`);
+    res.redirect(`/groups/${req.params.id}?success_message=You have joined the group`);
   } catch (err) {
     console.log(err);
     const message = "Error joining group";

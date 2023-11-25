@@ -87,6 +87,7 @@ class User_Group_role {
   }
 
   static async getByUserIdAndGroupId(user_id, group_id) {
+    if(!user_id || !group_id) return null;
     try {
       const [rows] = await db.execute(
         "SELECT * FROM User_Group_role WHERE user_id = ? and group_id = ?",

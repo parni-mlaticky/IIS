@@ -32,7 +32,6 @@ const upload = multer({ storage: storage });
 router.get("/", authenticate, async (req, res) => {
   try {
     // If there is a username in params, redirect to the user's profile
-    console.log("PARAMS: " , req.query);
     if(req.query.username){
       const profile = await profileModel.getByUsername(req.query.username);
       if (!profile) {
@@ -83,8 +82,8 @@ router.get("/:id", async (req, res) => {
 
     if (
       profile.visibility === constants.Visibility.PRIVATE &&
-      req.userData.id !== profile.id &&
-      !req.userData.isAdmin
+      req.userData?.id !== profile.id &&
+      !req.userData?.isAdmin
     ) {
       const message = "Profile is private";
       return res.status(403).render("profile/private_profile", {
