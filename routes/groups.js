@@ -527,3 +527,46 @@ router.post(
     }
   },
 );
+
+router.post(
+  "/:id/revoke_moderator/:userid",
+  authenticate,
+  isAuthorized("group"),
+  async (req, res) => {
+    try {
+      const group = await groupModel.getById(req.params.id);
+      if (!group) {
+        const message = "Group not found";
+        return res.status(404).render("404", {
+          message: message,
+          url: req.url,
+          title: `${404} ${message}`,
+        });
+      }
+      const user_name = (await userModel.getById(req.params.userid)).username;
+      console.log("USER_NAME", user_name);
+      const user_group_role = await userGroupModel.getByUserIdAndGroupId(req.params.userid, req.params.id);
+      const role = user_group_role[0].role;
+      console.log(user_group_role);
+      if(role != 1) {
+        return res.redirect(`/groups/${req.params.id}?error_message=User ${user_name} is not a moderator!`);
+      }
+
+      const userGroupObject = new userGroupModel(user_group_role[0].id, user_group_role[0].user_id, user_group_role[0].group_id,
+        GroupRole.MEMBER);
+
+      await userGroupObject.save();
+
+      return res.redirect(`/groups/${req.params.id}?success_message=Moderator rights successfuly revoked from user ${user_name}!`);
+    } catch (err) {
+      console.log(err);
+      const message = "Error revoking moderator rights";
+      res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
+      });
+    }
+  }
+
+)

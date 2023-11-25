@@ -10,12 +10,17 @@
     <div class="moderators" style="margin-bottom: 20px;">
       <h4>Moderators</h4>
       <% moderators.forEach(function(moderator) { %>
+        <div style="display: flex; align-items:center; gap: 10px">
         <p><%= moderator.username %> (<a href="/profile/<%= moderator.user_id %>">Profile</a>)</p>
 
         <% if (user && (owner.user_id == user.id || user.isAdmin )) { %>
-          <form action="/groups/<%= group.id %>/hand_over_ownership/<%= moderator.user_id %>" method="post">
-            <input type="submit" value="Hand Over Ownership" style="padding: 5px 10px; margin-top: 5px;"/>
+          <form <%- `id="form_hand_over_ownership_${moderator.user_id}"` %> style="display: none" action="/groups/<%= group.id %>/hand_over_ownership/<%= moderator.user_id %>" method="post">
           </form>
+            <input style="display:inline; font-size: 10px;" type="button" <%- `onClick="hand_over_ownership(${moderator.user_id})"` %> value="Hand Over Ownership" style="padding: 5px 10px; margin-top: 5px;"/>
+          <form <%- `id="form_revoke_moderator_${moderator.user_id}"` %> style="display: none" action="/groups/<%= group.id %>/revoke_moderator/<%= moderator.user_id %>" method="post">
+          </form>
+            <input style="display:inline; font-size: 10px;" type="button" <%- `onClick="revoke_moderator(${moderator.user_id})"` %> value="Revoke moderator privileges" style="padding: 5px 10px; margin-top: 5px;"/>
+        </div>
         <% } %>
       <% }); %>
     </div>
@@ -167,6 +172,19 @@
         document.getElementById("kick_user_form_" + user_id).submit();
       }
   } 
+  const hand_over_ownership = (id) => {
+    let r = confirm("Are you sure you want to transfer ownership of this group?");
+    if(r) {
+      document.getElementById("form_hand_over_ownership_" + id).submit();
+    }
+  }
+
+  const revoke_moderator = (id) => {
+    let r = confirm("Are you sure you want to revoke this moderator's privileges?")
+      if(r) {
+        document.getElementById("form_revoke_moderator_" + id).submit();
+      }
+  }
 </script>
 
 <h2>Threads</h2>
