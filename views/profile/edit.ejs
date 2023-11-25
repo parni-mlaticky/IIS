@@ -19,18 +19,18 @@
     <input type="hidden" name="_method" value="PUT"> 
         
         <div>
-            <label for="username">Change username:</label>
+            <label for="username">Change username:</label> <br>
             <input type="text" id="username" name="username" value="<%= user.username %>" required>
         </div>
 
         <div>
             <h2>Change password:</h2>
             <label for="old_password">Old password</label>
-            <input type="password" id="old_password" name="old_password" value="">
+            <input type="password" id="old_password" name="old_password" value=""> <br>
             <label for="new_password">New password</label>
             <input type="password" id="new_password" name="new_password" value="">
         </div>
-
+          <br>
         <div>
             <label for="picture">Change profile picture</label>
             <input type="file" id="picture" name="picture" value="/<%= user.path_to_avatar %>">
@@ -45,11 +45,11 @@
             <option value="public" <%= user.visibility === 2 ? 'selected' : '' %>>Public</option>
           </select>
         </div>
-
+        <br>
         <button type="submit">Update Profile</button>
     </form>
 
-    <a href="/profile/<%= user.id %>">Cancel</a>
+    <button><a href="/profile/<%= user.id %>">Cancel</a></button>
     </div>
 
     <script>

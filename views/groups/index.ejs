@@ -1,4 +1,5 @@
 <%- include('../partials/navbar') %>
+
 <div class="center">
   <h1>Groups</h1>
     <% if (user) { %>
@@ -14,6 +15,7 @@
           <option value="1">Priate</option>
           <option value="0">Invite only</option>
         </select>
+        <br>
         <label for="avatar">Avatar</label>
         <input type="file" name="avatar" placeholder="avatar"/> <br>
         <input type="submit" value="Create group" /> <br>
