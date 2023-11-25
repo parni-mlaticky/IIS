@@ -66,6 +66,19 @@ class Group {
     }
   }
 
+  static async getRegisteredUserDisplayedGroups(user_id) {
+    try {
+      const [rows] = await db.query(
+        "SELECT * FROM `Group` WHERE id IN (SELECT DISTINCT group_id FROM `User_Group_role` WHERE user_id = ? OR visibility >= 1)",
+        [user_id],
+      );
+      console.log("ROWS", rows);
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   async update() {
     try {
       const [rows] = await db.query(

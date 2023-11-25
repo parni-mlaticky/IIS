@@ -1,4 +1,6 @@
     <%- include('../partials/navbar') %>
+<!DOCTYPE html>
+<body>
 <div class="member-sidebar" style="width: 25%; float: left; padding: 10px; box-sizing: border-box;">
     <h3 style="text-align: center;">Group Members</h3>
     <div class="owner" style="margin-bottom: 20px;">
@@ -21,6 +23,11 @@
       <h4>Members</h4>
       <% members.forEach(function(member) { %>
         <p><%= member.username %> (<a href="/profile/<%= member.user_id %>">Profile</a>)</p>
+        <% if(user_is_moderator_or_higher) { %>
+        <form id="kick_user_form_<%= member.user_id %>" action="/groups/<%= group.id %>/kick/<%= member.user_id %>" method="post">
+          <input style="color: red" type="button" value="Remove member" onclick="kick_user(<%= "\"" + member.username + "\"" %>, <%= member.user_id %>)"/>
+        </form>
+        <% } %>
       <% }); %>
     </div>
 </div>
@@ -29,7 +36,7 @@
     <h1><%= group.name %></h1>
     <p><%= group.description %></p>
 
-      <% if (user_can_invite) { %>
+      <% if (user_is_moderator_or_higher) { %>
 <form id="inviteForm" action="/groups/<%= group.id %>/invite/" method="post">
     <input type="hidden" id="userId" name="userId" value="" />
     <input type="text" id="userSearch" placeholder="Search for users..." />
@@ -45,11 +52,25 @@
           <input type="submit" value="Join group" />
         </form>
       <% } %>
+  
+      <% if (user_can_request_join) { %>
+        <form action="/groups/<%= group.id %>/join" method="post">
+          <input type="submit" value="Request to join a group" />
+        </form>
+      <% } %>
+
       <% if (user_can_apply_for_moderator) { %>
         <form action="/groups/<%= group.id %>/request_moderator" method="post">
           <input type="submit" value="Request moderator" />
         </form>
       <% } %>
+
+      <% if(user_can_leave) { %>
+        <form action="/groups/<%= group.id %>/leave" method="post" id="leave_group_form" name="leave_group_form">
+          <input type="button" value="Leave group" style="color: red" onClick="leave_group()"/>
+        </form>
+      <% } %>
+
     <% if (user_can_edit) { %>
       <h2>Edit group</h2>
       <form action="/groups/<%= group.id %>/?_method=PUT" method="post" if="form" enctype="multipart/form-data">
@@ -64,7 +85,7 @@
         <label for="visibility">New visibility</label>
         <select name="visibility" id="visibility">
           <option value="2" <%= group.visibility == 2 ? "selected" : "" %>>Public</option>
-          <option value="1" <%= group.visibility == 1 ? "selected" : "" %>>Private</option>
+          <option value="1" <%= group.visibility == 1 ? "selected" : "" %>>Registered users</option>
           <option value="0" <%= group.visibility == 0 ? "selected" : "" %>>Invite only</option>
         </select>
         <input type="submit" value="Edit group" /> <br>
@@ -97,13 +118,6 @@
     }
   </script>
 
-    <script>
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-      });
-    </script>
-
-
 <script>
     document.getElementById('userSearch').addEventListener('input', function(e) {
         const searchTerm = e.target.value;
@@ -134,7 +148,23 @@
     });
 </script>
 
-  <div class="center" style="margin-top:15%">
+<script>
+  const leave_group = () => {
+    debugger;
+    let r = confirm("Are you sure you want to leave this group?");
+    if(r){
+      document.getElementById("leave_group_form").submit();
+    }
+  }
+  const kick_user = (username, user_id) => {
+    let r = confirm("Are you sure you want to kick the user " + username + " from the group?");
+      if(r) {
+        document.getElementById("kick_user_form_" + user_id).submit();
+      }
+  } 
+</script>
+
+<div class="center" style="margin-top:15%">
     <% for (let i = 0; i < threads.length; i++) { %>
       <%- include('../partials/user.ejs', { user_id: threads[i].user_id, path_to_avatar: threads[i].path_to_avatar, username: threads[i].username, details: threads[i].post_time }) %>
       <% if (threads[i].edited) { %>

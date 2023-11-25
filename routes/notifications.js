@@ -89,7 +89,6 @@ router.post("/:id/reject_moderator", authenticate, async (req, res) => {
 router.post("/:id/accept_invite", authenticate, async (req, res) => {
   try {
     const details = await NotificationModel.getById(req.params.id);
-    console.log(details);
 
     const userGroupRole = new UserGroupRoleModel(
       null,
