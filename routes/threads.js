@@ -23,7 +23,7 @@ router.get("/:groupid", checkLogin, async (req, res) => {
       });
     }
     const group = await groupModel.getById(thread_with_content[0].group_id);
-
+    
     if (!req.userData && group[0].visibility != Visibility.PUBLIC) {
       return res.status(404).render("error", {
         message: "Thread not found",
@@ -39,12 +39,14 @@ router.get("/:groupid", checkLogin, async (req, res) => {
     }
 
     const threadComments = await threadModel.getCommentsUserVote(req.params.groupid);
-    console.log(threadComments);
+    const user_role = (await (userGroupModel.getByUserIdAndGroupId(req.userData?.id, group[0].id)))[0];
+
     return res.status(200).render("threads/details", {
       title: `${group[0].name}: ${thread_with_content[0].title}`,
       thread: thread_with_content[0],
       group: group[0],
       user: req.userData,
+      moderator_or_higher: user_role?.role >= 1 || req.userData?.isAdmin, 
       comments: threadComments,
       isMember,
     });
@@ -306,16 +308,25 @@ router.put(
 router.delete(
   "/:threadid/comments/:id",
   authenticate,
-  isAuthorized("comment"),
   async (req, res) => {
     try {
       const comment = await commentModel.getById(req.params.id);
+      console.log("COMMENT", comment);
       if (comment.length != 1) {
         return res.status(404).render("404", {
           message: "Comment not found",
           url: req.url,
           title: "404",
         });
+      }
+      
+      const group = await groupModel.getGroupByCommentId(comment[0].id);
+      const user_role = (await userGroupModel.getByUserIdAndGroupId(req.userData.id, group[0].id))[0].role;
+      console.log(user_role);
+      const user_is_moderator_or_higher = user_role >= 1 || req.userData.is_admin; 
+
+      if((comment[0].author_id != req.userData.id) && !user_is_moderator_or_higher) {
+        return res.redirect(`/threads/${req.params.threadid}?error_message=You cannot delete this comment`);
       }
       const newComment = new commentModel(
         comment[0].id

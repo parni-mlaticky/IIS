@@ -79,6 +79,21 @@ class Group {
     }
   }
 
+
+
+  static async getGroupByCommentId(comment_id) {
+    try {
+      const [rows] = await db.query(
+        "SELECT * FROM `Group` WHERE id IN (SELECT group_id FROM `Thread` WHERE id IN (SELECT thread_id FROM `Comment` WHERE id = ?));",
+        [comment_id],
+      );
+      return rows;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+
   async update() {
     try {
       const [rows] = await db.query(
