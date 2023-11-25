@@ -513,8 +513,9 @@ router.post(
           title: `${404} ${message}`,
         });
       }
-      userGroupModel.hand_over_ownership(req.params.userid, req.params.id);
-      res.redirect(`/groups/${req.params.id}`);
+      const user_name = await userModel.getById(req.params.userid).username;
+      await userGroupModel.hand_over_ownership(req.params.userid, req.params.id);
+      return res.redirect(`/groups/${req.params.id}?success_message=Ownership successfuly handed over to user ${user_name}!`);
     } catch (err) {
       console.log(err);
       const message = "Error handing over ownership of group";

@@ -39,6 +39,7 @@ router.get("/:groupid", checkLogin, async (req, res) => {
     }
 
     const threadComments = await threadModel.getCommentsUserVote(req.params.groupid);
+    console.log(threadComments);
     return res.status(200).render("threads/details", {
       title: `${group[0].name}: ${thread_with_content[0].title}`,
       thread: thread_with_content[0],
@@ -252,7 +253,7 @@ router.post("/:id/comments", authenticate, checkLogin, async (req, res) => {
       new Date(),
       false
     );
-    comment.save();
+    await comment.save();
 
     res.redirect(`/threads/${req.params.id}`);
   } catch (err) {
@@ -320,7 +321,7 @@ router.delete(
         comment[0].id
       );
       await newComment.delete();
-      res.redirect(`/threads/${req.params.threadid}`);
+      res.redirect(`/threads/${req.params.threadid}?success_message=Comment deleted successfully`);
     } catch (err) {
       console.log(err);
       const message = "Error deleting comment";

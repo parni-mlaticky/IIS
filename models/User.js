@@ -90,6 +90,42 @@ class User {
     }
   }
 
+  async getNumberOfJoinedGroups(){
+    try {
+      const [rows] = await db.execute(
+        "SELECT COUNT(*) AS count FROM User_Group_role WHERE user_id = ?",
+        [this.id],
+      );
+      return rows[0].count;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async getNumberOfThreads(){
+    try {
+      const [rows] = await db.execute(
+        "SELECT COUNT(*) AS count FROM Thread t JOIN Comment c ON t.content_id = c.id where author_id = ?",
+        [this.id],
+      );
+      return rows[0].count;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async getNumberOfComments(){
+    try {
+      const [rows] = await db.execute(
+        "SELECT COALESCE(COUNT(*), 0) AS count FROM Comment c LEFT JOIN Thread t on c.id = t.content_id WHERE author_id = ? AND t.content_id IS NULL",  
+        [this.id],
+      );
+      return rows[0].count;
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   async update() {
     try {
       await db.execute(

@@ -1,4 +1,9 @@
     <%- include('../partials/navbar') %>
+<!DOCTYPE html>
+<head>
+  <link rel="stylesheet" href="/public/css/user_profile.css">
+</head>
+<body>
     <div class="center">
     <h1>User Profile</h1>
 
@@ -14,6 +19,13 @@
           <h3 style="color: red">Admin</h3>
         <% } %>
 
+    <h3>Statistics</h3>
+    <div class="user-statistics">
+      <p> Number of joined groups: <span class="stat-value"><%= user_number_of_joined_groups %></span> </p>
+      <p> Number of posted threads: <span class="stat-value"><%= user_number_of_threads %></span> </p>
+      <p> Number of posted comments: <span class="stat-value"><%= user_number_of_comments %></span> </p>
+    </div>
+ 
         <% if (editable) { %>
           <div class="profile-actions">
             <a href="/profile/<%= user.id %>/edit">Edit Profile</a>

@@ -1,4 +1,5 @@
   <%- include('../partials/navbar') %>
+  <link rel="stylesheet" href="/public/css/thread.css">
     <script>
       form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -50,13 +51,14 @@
               <button class="down_vote <%= comments[i].user_score == -1 && "selected_vote" || "" %>">Down vote</button>
             </div>
             <p><%= comments[i].content %></p>
-            <a href="/threads/<%= comments[i].thread_id %>/comments/<%= comments[i].comment_id %>">edit</a>
             <p><%= comments[i].score %></p>
-            <form action="/threads/<%= thread.parent_id %>/comments/<%= comments[i].comment_id %>/?_method=DELETE" method="post" if="form" enctype="x-www-form-urlencoded">
-                <input type="submit" value="delete">
-            </form>
+            <% if(comments[i].author_id == user.id) { %>
+              <a class="button-edit" href="/threads/<%= comments[i].thread_id %>/comments/<%= comments[i].comment_id %>">edit</a>
+              <form <%- `id="form_delete_comment_${comments[i].comment_id}"` %> style="display: none" action="/threads/<%= thread.parent_id %>/comments/<%= comments[i].comment_id %>/?_method=DELETE" method="post" if="form" enctype="x-www-form-urlencoded">
+              </form>
+                  <input class="button-delete" type="button" value="delete" <%= `onClick=delete_comment(${comments[i].comment_id})`%> >
+            <% } %>
             <hr>
-        </div>
         </div>
     <% } %>
 
@@ -89,6 +91,12 @@
          });
        }
      );
+    const delete_comment = (id) => {
+      const r = confirm("Are you sure you want to delete this comment?");
+      if(r) {
+        document.getElementById("form_delete_comment_" + id).submit();
+      }
+    }
     </script>
   </body>
 </html>

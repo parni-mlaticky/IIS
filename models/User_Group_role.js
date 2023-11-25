@@ -102,10 +102,10 @@ class User_Group_role {
   static async hand_over_ownership(user_id, group_id) {
     try {
       const current_owner = await this.getGroupOwner(group_id);
-      db.execute("UPDATE User_Group_role SET role = 1 WHERE id = ?", [
+      await db.execute("UPDATE User_Group_role SET role = 1 WHERE id = ?", [
         current_owner[0].id,
       ]);
-      db.execute(
+      await db.execute(
         "UPDATE User_Group_role SET role = 2 WHERE user_id = ? and group_id = ?",
         [user_id, group_id],
       );
