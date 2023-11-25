@@ -134,7 +134,7 @@
     });
 </script>
 
-  <div class="center">
+  <div class="center" style="margin-top:15%">
     <% for (let i = 0; i < threads.length; i++) { %>
       <%- include('../partials/user.ejs', { user_id: threads[i].user_id, path_to_avatar: threads[i].path_to_avatar, username: threads[i].username, details: threads[i].post_time }) %>
       <% if (threads[i].edited) { %>
