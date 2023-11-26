@@ -51,7 +51,6 @@ class User_Group_role {
   }
 
   static async isUserGroupOwner(user_id, group_id) {
-    console.log("IS USER GROUP OWNER", user_id, group_id);
     try {
       const [rows] = await db.execute(
         "SELECT * FROM User_Group_role WHERE user_id = ? and group_id = ? and role = 2",

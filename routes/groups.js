@@ -541,10 +541,8 @@ router.post(
         });
       }
       const user_name = (await userModel.getById(req.params.userid)).username;
-      console.log("USER_NAME", user_name);
       const user_group_role = await userGroupModel.getByUserIdAndGroupId(req.params.userid, req.params.id);
       const role = user_group_role[0].role;
-      console.log(user_group_role);
       if(role != 1) {
         return res.redirect(`/groups/${req.params.id}?error_message=User ${user_name} is not a moderator!`);
       }
@@ -591,8 +589,6 @@ router.post(
       }
 
       const thread = await threadModel.getById(req.params.threadid);
-      console.log("THREADID", req.params.threadid)
-      console.log(thread);
       if (!thread) {
         const message = "Thread not found";
         return res.status(404).render("404", {
