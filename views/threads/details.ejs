@@ -53,7 +53,6 @@
             <div comment-id="<%= comments[i].comment_id %>">
             <p>
                 Score:
-                <%= comments[i].score %>
                 <% if (user) { %>
                     &emsp;
                     <button class="up_vote <%= (comments[i].user_score == 1) ? "selected_vote" : "unselected_vote" %>">Up vote</button>
