@@ -4,6 +4,7 @@ const path = require("path");
 const multer = require("multer");
 const router = express.Router();
 const profileModel = require("../models/User");
+const groupModel = require("../models/Group");
 const bcrypt = require("bcrypt");
 const {
   authenticate,
@@ -12,8 +13,6 @@ const {
   isAdmin,
 } = require("../middlewares/auth");
 module.exports = router;
-
-
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -310,6 +309,13 @@ router.delete("/:id", authenticate, checkLogin, isAuthorized("user"), async (req
         title: "404",
       });
     }
+
+    const user_is_owner_of_group = await groupModel.isUserOwnerOfAnyGroup(req.params.id);
+    if(user_is_owner_of_group){
+      const error_message = req.userData?.isAdmin ?  "Cannot delete profile. User is the owner of at least one group." : "Cannot delete profile. You are the owner of at least one group."
+      return res.redirect(`/profile/${req.params.id}/edit?error_message=` + encodeURIComponent(error_message));
+    }
+
     const profileObject = new profileModel(profile.id, null, null, null, null, null);
     await profileObject.delete();
     const success_message = "Profile deleted successfully";

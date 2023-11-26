@@ -78,6 +78,20 @@ class Group {
     }
   }
 
+  static async isUserOwnerOfAnyGroup(user_id) {
+    try {
+      const [rows] = await db.query(
+        "SELECT * FROM `Group` WHERE id IN (SELECT DISTINCT group_id FROM `User_Group_role` WHERE user_id = ? AND role = 2)",
+        [user_id],
+      );
+      if(rows.length > 0) {
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
 
   static async getGroupByCommentId(comment_id) {

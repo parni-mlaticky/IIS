@@ -31,6 +31,13 @@ router.post("/:id/accept_moderator", authenticate, async (req, res) => {
       details[0].applicant_id,
       details[0].group_id,
     );
+    if(userGroupRole.length == 0){
+      const eror_message = "Notification no longer valid. Probably because user is no longer a member of the group."
+      const notif = new NotificationModel(details[0].id, null, null, null, null, null);
+      await notif.delete();
+      return res.redirect("/notifications?error_message=" + eror_message);
+    }
+
     userGroupRole = userGroupRole[0];
     userGroupRole = new UserGroupRoleModel(
       userGroupRole.id,
@@ -50,7 +57,7 @@ router.post("/:id/accept_moderator", authenticate, async (req, res) => {
       details[0].message,
     );
     await details.delete();
-    res.redirect("/notifications");
+    res.redirect("/notifications?success_message=Successfully accepted moderator request");
   } catch (err) {
     console.log(err);
     const message = "Error retrieving notifications from database";
@@ -74,7 +81,7 @@ router.post("/:id/reject_moderator", authenticate, async (req, res) => {
       noitification[0].message,
     );
     await noitification.delete();
-    res.redirect("/notifications");
+    res.redirect("/notifications?success_message=Successfully rejected moderator request");
   } catch (err) {
     console.log(err);
     const message = "Error retrieving notifications from database";
@@ -108,7 +115,7 @@ router.post("/:id/accept_invite", authenticate, async (req, res) => {
 
     await userGroupRole.save();
     await notification.delete();
-    res.redirect("/notifications");
+    res.redirect("/notifications?success_message=Successfully accepted invite");
   } catch (err) {
     console.log(err);
     const message = "Error retrieving notifications from database";
@@ -132,7 +139,7 @@ router.post("/:id/reject_invite", authenticate, async (req, res) => {
       notification[0].message,
     );
     await notification.delete();
-    res.redirect("/notifications");
+    res.redirect("/notifications?success_message=Successfully rejected invite");
   } catch (err) {
     console.log(err);
     const message = "Error retrieving notifications from database";
