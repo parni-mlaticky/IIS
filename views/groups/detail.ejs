@@ -4,10 +4,13 @@
 <body>
 <div class="member-sidebar" style="width: 25%; float: left; padding: 10px; box-sizing: border-box;">
     <h3 style="text-align: center;">Group Members</h3>
+    <% if(owner) { %>
     <div class="owner" style="margin-bottom: 20px;">
       <h4>Owner</h4>
       <p><%= owner.username %> (<a href="/profile/<%= owner.user_id %>">Profile</a>)</p>
+
     </div>
+    <% } %> 
     <div class="moderators" style="margin-bottom: 20px;">
       <h4>Moderators</h4>
       <% moderators.forEach(function(moderator) { %>
