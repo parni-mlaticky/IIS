@@ -1,3 +1,5 @@
+SET collation_connection = 'utf8_general_ci';
+
 create table Registered_user (
     id integer primary key auto_increment,
     username varchar(255),
