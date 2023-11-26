@@ -48,7 +48,7 @@ class Thread {
     }
   }
 
-  static async getCommentsUserVote(thread_id) {
+  static async getCommentsUserVote(thread_id, user_id) {
     try {
       const [rows] = await db.query(
         `
@@ -68,11 +68,11 @@ class Thread {
           FROM Comment c
           LEFT JOIN Registered_user u ON c.author_id = u.id
           LEFT JOIN User_Comment_vote v ON c.id = v.comment_id
-          LEFT JOIN User_Comment_vote vv ON vv.comment_id = c.id AND vv.user_id = 6
+          LEFT JOIN User_Comment_vote vv ON vv.comment_id = c.id AND vv.user_id = ?
           WHERE c.thread_id = ?
           GROUP BY c.thread_id, u.id, c.content, c.post_time, c.edited, u.username, u.path_to_avatar, u.is_admin, c.id;
         `,
-        [thread_id],
+        [user_id, thread_id],
       );
       return rows;
     } catch (err) {
