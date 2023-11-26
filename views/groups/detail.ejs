@@ -44,6 +44,7 @@
 </div>
   <div class="center">
   <div>
+    <img src="/<%= group.path_to_avatar%>" height="100px">
     <h1><%= group.name %></h1>
     <p><%= group.description %></p>
 
@@ -57,7 +58,6 @@
 <br>
       <% } %>
      
-    <img src="/<%= group.path_to_avatar%>" height="100px">
       <% if (user_can_join) { %>
         <form action="/groups/<%= group.id %>/join" method="post">
           <input type="submit" value="Join group" />
