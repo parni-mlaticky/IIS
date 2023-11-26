@@ -568,5 +568,55 @@ router.post(
       });
     }
   }
-
 )
+
+router.post(
+  "/:groupid/delete_thread/:threadid",
+  authenticate,
+  async (req, res) => {
+    try {
+      const group = await groupModel.getById(req.params.groupid);
+      if (!group) {
+        const message = "Group not found";
+        return res.status(404).render("404", {
+          message: message,
+          url: req.url,
+          title: `${404} ${message}`,
+        });
+      }
+
+
+      const user_role = await userGroupModel.getByUserIdAndGroupId(req.userData.id, req.params.groupid);
+
+      const is_authorized = user_role[0].role >= 1 || req.userData?.isAdmin;
+      if(!is_authorized) {
+        return res.redirect(`/groups/${req.params.groupid}?error_message=You are not authorized to delete threads!`);
+      }
+
+      const thread = await threadModel.getById(req.params.threadid);
+      console.log("THREADID", req.params.threadid)
+      console.log(thread);
+      if (!thread) {
+        const message = "Thread not found";
+        return res.status(404).render("404", {
+          message: message,
+          url: req.url,
+          title: `${404} ${message}`,
+        });
+      }
+      const threadObject = new threadModel(thread[0].id, thread[0].group_id, thread[0].title, thread[0].content_id);
+      await threadObject.delete();
+
+      return res.redirect(`/groups/${req.params.groupid}?success_message=Thread successfuly deleted!`);
+    } catch (err) {
+      console.log(err);
+      const message = "Error deleting thread";
+      res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
+      });
+    }
+  }
+);
+

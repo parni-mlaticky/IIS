@@ -1,4 +1,5 @@
     <%- include('../partials/navbar') %>
+  <link rel="stylesheet" href="/public/css/thread.css">
 <!DOCTYPE html>
 <body>
 <div class="member-sidebar" style="width: 25%; float: left; padding: 10px; box-sizing: border-box;">
@@ -105,8 +106,8 @@
       <form action="/groups/<%= group.id %>/?_method=DELETE" method="post" name="delete_form" id="delete_form" enctype="multipart/form-data">
         <input type="button" style="color: red" name="delete" id="delete" value="Delete group" onclick="delete_group()">
       </form> 
-    <% } %>
     <hr>
+    <% } %>
     <% if (user && user_can_post) { %>
       <h2>Create Thread</h2>
       <form action="/threads/<%= group.id %>" method="post", enctype="x-www-form-urlencoded">
@@ -209,6 +210,13 @@
         document.getElementById("form_revoke_moderator_" + id).submit();
       }
   }
+  
+  const delete_thread = (id) => {
+    let r = confirm("Are you sure you want to delete this thread?");
+    if(r){
+      document.getElementById("form_delete_thread_" + id).submit();
+    }
+  }
 </script>
 
 <h2>Threads</h2>
@@ -226,6 +234,11 @@
             <p class="commentContent" style="color: #333;"><%= threads[i].content %></p>
             <a href="/threads/<%= threads[i].parent_id %>" style="text-decoration: none; color: #007bff;">Open thread</a>
             <hr style="border-top: 1px solid #ddd;">
+            <% if(user_is_moderator_or_higher) { %>
+              <form <%- `id="form_delete_thread_${threads[i].parent_id}"` %> style="display: none" method="post" action="/groups/<%= group.id  %>/delete_thread/<%= threads[i].parent_id %>">
+              </form>
+              <input type="button" onClick="delete_thread(<%- `${threads[i].parent_id}` %>)" value="Delete thread" class="button-delete">
+            <% } %>
         </div>
     <% } %>
 </div>

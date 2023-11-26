@@ -1,4 +1,5 @@
     <%- include('partials/navbar') %>
+  <link rel="stylesheet" href="/public/css/user_profile.css">
 <h1>Users</h1>
     <% for (let i = 0; i < (users ? users.length : 0); i++) { %>
         <div>
@@ -8,7 +9,14 @@
             <% if(users[i].is_admin){ %>
               <h3 style="color: red">Admin</h3>
             <% } %>
-              <img src="/<%= users[i].path_to_avatar %>">
+            <div class="user-container">
+              <img src="/<%= users[i].path_to_avatar %>" height="150px">
+              <div class="user-statistics">
+                Number of joined groups: <%= users[i].number_of_groups %>  <br>
+                Number of threads: <%= users[i].number_of_threads %> <br>
+                Number of comments: <%= users[i].number_of_comments %>
+              </div>
+            </div>
             <hr>
         </div>
     <% } %>
