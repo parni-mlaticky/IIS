@@ -169,11 +169,10 @@ router.get("/:id", async (req, res) => {
     );
 
     let user_can_edit = user_role_in_group?.length == 1 && user_role_in_group[0].role > GroupRole.MODERATOR || req.userData?.isAdmin;
-    let user_can_join = user_role_in_group?.length == 0 && group[0].visibility == Visibility.PUBLIC;
+    let user_can_join = user_role_in_group?.length == 0 && group[0].visibility >= Visibility.REGISTERED;
     let user_can_post = user_role_in_group?.length == 1 && user_role_in_group[0].role >= GroupRole.MEMBER || req.userData?.isAdmin;
     let user_can_apply_for_moderator = (!req.userData?.isAdmin) && (user_role_in_group?.length == 1 && user_role_in_group[0].role == GroupRole.MEMBER && notif.length == 0);
     let user_is_moderator_or_higher = user_role_in_group?.length == 1 && user_role_in_group[0].role > GroupRole.MEMBER || req.userData?.isAdmin;
-    let user_can_request_join = user_role_in_group?.length == 0 && group[0].visibility == Visibility.REGISTERED;
     let user_can_leave = user_role_in_group?.length == 1 && user_role_in_group[0].role != GroupRole.OWNER;
 
     let ownerUser = null;
@@ -210,8 +209,6 @@ router.get("/:id", async (req, res) => {
       user_can_apply_for_moderator,
       user_is_moderator_or_higher,
       user_can_post,
-      // TODO make the requests for joining work
-      user_can_request_join,
       user_can_leave,
       owner: ownerUser,
       moderators: moderatorUsers,
@@ -568,5 +565,55 @@ router.post(
       });
     }
   }
-
 )
+
+router.post(
+  "/:groupid/delete_thread/:threadid",
+  authenticate,
+  async (req, res) => {
+    try {
+      const group = await groupModel.getById(req.params.groupid);
+      if (!group) {
+        const message = "Group not found";
+        return res.status(404).render("404", {
+          message: message,
+          url: req.url,
+          title: `${404} ${message}`,
+        });
+      }
+
+
+      const user_role = await userGroupModel.getByUserIdAndGroupId(req.userData.id, req.params.groupid);
+
+      const is_authorized = user_role[0].role >= 1 || req.userData?.isAdmin;
+      if(!is_authorized) {
+        return res.redirect(`/groups/${req.params.groupid}?error_message=You are not authorized to delete threads!`);
+      }
+
+      const thread = await threadModel.getById(req.params.threadid);
+      console.log("THREADID", req.params.threadid)
+      console.log(thread);
+      if (!thread) {
+        const message = "Thread not found";
+        return res.status(404).render("404", {
+          message: message,
+          url: req.url,
+          title: `${404} ${message}`,
+        });
+      }
+      const threadObject = new threadModel(thread[0].id, thread[0].group_id, thread[0].title, thread[0].content_id);
+      await threadObject.delete();
+
+      return res.redirect(`/groups/${req.params.groupid}?success_message=Thread successfuly deleted!`);
+    } catch (err) {
+      console.log(err);
+      const message = "Error deleting thread";
+      res.status(500).render("error", {
+        message: message,
+        status: 500,
+        title: `${500} ${message}`,
+      });
+    }
+  }
+);
+

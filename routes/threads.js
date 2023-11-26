@@ -39,7 +39,8 @@ router.get("/:groupid", checkLogin, async (req, res) => {
 
     let user_id = req.userData ? req.userData.id : null;
     const threadComments = await threadModel.getCommentsUserVote(req.params.groupid, user_id);
-    const user_role = (await (userGroupModel.getByUserIdAndGroupId(req.userData?.id, group[0].id)))[0];
+    const user_role = !req.userData ? -1 : (await (userGroupModel.getByUserIdAndGroupId(req.userData?.id, group[0].id)))[0];
+
     return res.status(200).render("threads/details", {
       title: `${group[0].name}: ${thread_with_content[0].title}`,
       thread: thread_with_content[0],

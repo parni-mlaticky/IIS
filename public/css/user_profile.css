@@ -23,3 +23,10 @@
     color: #444; 
 }
 
+.user-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+
