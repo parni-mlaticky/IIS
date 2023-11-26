@@ -312,7 +312,14 @@ router.delete("/:id", authenticate, checkLogin, isAuthorized("user"), async (req
     }
     const profileObject = new profileModel(profile.id, null, null, null, null, null);
     await profileObject.delete();
-    res.redirect("/users?success_message=Profile deleted successfully");
+    const success_message = "Profile deleted successfully";
+    if(req.userData?.id === profile.id){
+      res.clearCookie("token");
+      return res.redirect(`/login?success_message=${success_message}`);
+    }
+    else {
+      return res.redirect(`/users?success_message=${success_message}`);
+    }
 
   } catch (err) {
     console.log(err);

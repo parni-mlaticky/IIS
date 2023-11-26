@@ -1,5 +1,6 @@
     </script>
     <%- include('../partials/navbar.ejs') %>
+    <link rel="stylesheet" href="/public/css/thread.css">
     <div class="center">
     <h1 style="color: red">Editing another user's profile</h1>
 
@@ -40,18 +41,17 @@
         </select>
       </div>
 
-      <button type="submit">Update Profile</button>
+      <button type="submit" class="button-edit">Update Profile</button>
     </form>
 
     <hr>
 
     <h2 style="color: red">Delete profile</h2>
     <form action="/profile/<%=user.id%>/?_method=DELETE" method="post" id="delete_user_form" name="delete_user_form">
-      <input type="hidden" name="_method" value="DELETE"> 
-      <input type="button" style="color: red" onclick="delete_user()" value="Delete Profile">
+      <input type="button" class="button-delete" onclick="delete_user()" value="Delete Profile">
     </form>
 
-    <a href="/profile/<%= user.id %>">Cancel</a>
+    <button class="button-edit" onclick="document.getElementById('cancel-button').click()"><a id="cancel-button" href="/profile/<%= user.id %> value="Cancel" style="color:white;">Cancel</a></button>
     </div>
 
     <script>

@@ -169,11 +169,10 @@ router.get("/:id", async (req, res) => {
     );
 
     let user_can_edit = user_role_in_group?.length == 1 && user_role_in_group[0].role > GroupRole.MODERATOR || req.userData?.isAdmin;
-    let user_can_join = user_role_in_group?.length == 0 && group[0].visibility == Visibility.PUBLIC;
+    let user_can_join = user_role_in_group?.length == 0 && group[0].visibility >= Visibility.REGISTERED;
     let user_can_post = user_role_in_group?.length == 1 && user_role_in_group[0].role >= GroupRole.MEMBER || req.userData?.isAdmin;
     let user_can_apply_for_moderator = (!req.userData?.isAdmin) && (user_role_in_group?.length == 1 && user_role_in_group[0].role == GroupRole.MEMBER && notif.length == 0);
     let user_is_moderator_or_higher = user_role_in_group?.length == 1 && user_role_in_group[0].role > GroupRole.MEMBER || req.userData?.isAdmin;
-    let user_can_request_join = user_role_in_group?.length == 0 && group[0].visibility == Visibility.REGISTERED;
     let user_can_leave = user_role_in_group?.length == 1 && user_role_in_group[0].role != GroupRole.OWNER;
 
     let ownerUser = null;
@@ -210,8 +209,6 @@ router.get("/:id", async (req, res) => {
       user_can_apply_for_moderator,
       user_is_moderator_or_higher,
       user_can_post,
-      // TODO make the requests for joining work
-      user_can_request_join,
       user_can_leave,
       owner: ownerUser,
       moderators: moderatorUsers,
