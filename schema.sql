@@ -71,7 +71,7 @@ alter table Notification add constraint fk_notification_recipient foreign key (r
 alter table Notification add constraint fk_notification_group foreign key (group_id) references `Group`(id) on delete cascade;
 
 -- login: admin, password: admin42
-INSERT INTO Registered_user (username, path_to_avatar, pwd_hash, visibility, is_admin) VALUES ("admin", "user.jpg", "$2b$10$Rkhm7RvoP0qGqs4zmEo3DOQc.lzhCg2guSIUPdM8FHoGkiN.ueawu", 1, 1);
+INSERT INTO Registered_user (username, path_to_avatar, pwd_hash, visibility, is_admin) VALUES ("admin", "public/default_profile_pic.png", "$2b$10$Rkhm7RvoP0qGqs4zmEo3DOQc.lzhCg2guSIUPdM8FHoGkiN.ueawu", 1, 1);
 
 DELIMITER $$
 
