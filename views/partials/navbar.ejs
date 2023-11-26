@@ -2,6 +2,30 @@
 <html>
 <head>
   <title><%= title %></title>
+  <link rel="stylesheet" href="/public/css/nav.css">
+  <link rel="stylesheet" href="/public/css/memberList.css">
+  <link rel="stylesheet" href="/public/css/landingPage.css">
+  <link rel="stylesheet" href="/public/css/notifications.css">
+  <link rel="stylesheet" href="/public/css/forms.css">
 </head>
+<body>
+
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="/">Fitdit</a>
+    <a href="/groups">Groups</a>
+    <a href="/users">Users</a>
+  </div>
+  <div class="navbar-right">
+  <% if (isLogged) {%>
+    <a href="/profile">Profile</a>
+    <a href="/logout">Logout</a>
+  <% } else { %>
+    <a href="/login">Login</a>
+    <a href="/register">Register</a>
+  <% } %>
+  </div>
+</nav>
 
 <%- include('./statuses.ejs') %>
+</body>

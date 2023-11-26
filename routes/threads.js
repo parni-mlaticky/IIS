@@ -4,7 +4,6 @@ const threadModel = require("../models/Thread");
 const groupModel = require("../models/Group");
 const commentModel = require("../models/Comment");
 const userGroupModel = require("../models/User_Group_role");
-const userCommentVoteModel = require("../models/User_Comment_vote");
 const { authenticate, isAuthorized, checkLogin } = require("../middlewares/auth");
 const { getThreadWithContentUser } = require("../models/Thread");
 const { Visibility } = require("../constants");
@@ -38,9 +37,9 @@ router.get("/:groupid", checkLogin, async (req, res) => {
       isMember = isMember || req.userData.isAdmin;
     }
 
-    const threadComments = await threadModel.getCommentsUserVote(req.params.groupid);
+    let user_id = req.userData ? req.userData.id : null;
+    const threadComments = await threadModel.getCommentsUserVote(req.params.groupid, user_id);
     const user_role = (await (userGroupModel.getByUserIdAndGroupId(req.userData?.id, group[0].id)))[0];
-
     return res.status(200).render("threads/details", {
       title: `${group[0].name}: ${thread_with_content[0].title}`,
       thread: thread_with_content[0],
@@ -362,7 +361,7 @@ router.post(
       }
       
       // Check that the user doesn't own the comment
-      const threadComments = await threadModel.getCommentsUserVote(req.params.groupid);
+      const threadComments = await threadModel.getCommentsUserVote(req.params.groupid, req.userData.id);
       if (req.userData.id == threadComments.author_id) {
         const message = "You cannot rate your own comment";
         return res.status(500).render("error", {

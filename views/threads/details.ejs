@@ -1,5 +1,5 @@
-  <%- include('../partials/navbar') %>
   <link rel="stylesheet" href="/public/css/thread.css">
+  <%- include('../partials/navbar') %>
     <script>
       form.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -8,17 +8,21 @@
 <div class="center">
     <div class="heading">
       <a href="/groups/<%= group.id %>">
-        <img src="/<%= group.path_to_avatar %>" height="80px">
-        <h2><%= group.name %></h2>
+        <h2>
+            <img src="/<%= group.path_to_avatar %>" height="80px">
+            <%= group.name %>
+        </h2>
       </a>
-      <h1><%= thread.title %></h1>
+      <h1>
+          <%= thread.title %>
+      </h1>
       <p><%= thread.content %></p>
       <% if(thread.edited) {%>
           <i>edited</i>
       <% } %>
       <%- include('../partials/user.ejs', { user_id: thread.user_id, path_to_avatar: thread.path_to_avatar, username: thread.username, details: thread.post_time }) %>
       <hr>
-    <% if (user && user.id == thread.author_id) {%>
+    <% if (user && user?.id == thread.author_id) {%>
     <h2>Edit thread</h2>
     <form action="/threads/<%= thread.parent_id %>/?_method=PUT" method="post" if="form" enctype="x-www-form-urlencoded">
       <label for="title">Title: </label>
@@ -43,16 +47,23 @@
     <% for (let i = 0; i < comments.length; i++) { %>
         <div class="comment">
             <%- include('../partials/user.ejs', { user_id: comments[i].author_id, path_to_avatar: comments[i].path_to_avatar, username: comments[i].username, details: comments[i].post_time }) %>
-            <% if(comments[i].edited) {%>
+            <% if (comments[i].edited) { %>
                 <i>edited</i>
             <% } %>
             <div comment-id="<%= comments[i].comment_id %>">
-              <button class="up_vote <%= comments[i].user_score == 1 && "selected_vote" || "" %>">Up vote</button>
-              <button class="down_vote <%= comments[i].user_score == -1 && "selected_vote" || "" %>">Down vote</button>
+            <p>
+                Score:
+                <%= comments[i].score %>
+                <% if (user) { %>
+                    &emsp;
+                    <button class="up_vote <%= (comments[i].user_score == 1) ? "selected_vote" : "unselected_vote" %>">Up vote</button>
+                    <button class="down_vote <%= (comments[i].user_score == -1) ? "selected_vote" : "unselected_vote" %>">Down vote</button>
+                <% } %>
+            </p>
+
             </div>
             <p><%= comments[i].content %></p>
-            <p><%= comments[i].score %></p>
-            <% if(comments[i].author_id == user.id) { %>
+            <% if(comments[i].author_id == user?.id) { %>
               <a class="button-edit" href="/threads/<%= comments[i].thread_id %>/comments/<%= comments[i].comment_id %>">edit</a>
             <% } %>
             <% if(comments[i].author_id == user.id || moderator_or_higher) { %>
@@ -78,8 +89,7 @@
      document.querySelectorAll(".up_vote").forEach(
        async (button) => {
          button.addEventListener("click", async function() {
-          console.log("brih");
-           const comment_id = this.parentNode.getAttribute("comment-id");
+           const comment_id = this.parentNode.parentNode.getAttribute("comment-id");
            await vote(comment_id, 1);
          });
        }
@@ -88,11 +98,12 @@
      document.querySelectorAll(".down_vote").forEach(
        async (button) => {
          button.addEventListener("click", async function() {
-           const comment_id = this.parentNode.getAttribute("comment-id");
+           const comment_id = this.parentNode.parentNode.getAttribute("comment-id");
            vote(comment_id, -1);
          });
        }
      );
+
     const delete_comment = (id) => {
       const r = confirm("Are you sure you want to delete this comment?");
       if(r) {

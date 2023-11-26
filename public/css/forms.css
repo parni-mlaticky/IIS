@@ -62,3 +62,27 @@ form input[type="submit"]:hover {
 .group h2 {
   margin-top: 0;
 }
+
+.unselected_vote {
+  background-color: #e7f0fe;
+  border: simple;
+  border-color: #e7f0fe;
+  color: black;
+  // padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.selected_vote {
+  background-color: #007bff;
+  border: simple;
+  border-color: #007bff ;
+  color: white;
+  // padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+img {
+  border-radius: 100%;
+}
