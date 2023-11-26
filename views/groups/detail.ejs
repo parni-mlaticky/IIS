@@ -128,6 +128,7 @@
     }
   </script>
 
+
 <script>
     document.getElementById('userSearch').addEventListener('input', function(e) {
         const searchTerm = e.target.value;
@@ -138,26 +139,35 @@
             .then(users => {
                 const resultsContainer = document.getElementById('userSearchResults');
                 resultsContainer.innerHTML = '';
+                resultsContainer.style.border = '1px solid #ddd';
+                resultsContainer.style.padding = '10px';
+                resultsContainer.style.maxHeight = '150px';
+                resultsContainer.style.overflowY = 'auto';
+
                 users.forEach(user => {
                     const li = document.createElement('li');
                     li.textContent = user.username;
+                    li.style.padding = '5px';
+                    li.style.cursor = 'pointer';
+                    li.style.borderBottom = '1px solid #eee';
+                    li.style.listStyleType = 'none';
+
                     li.addEventListener('click', function() {
-                        // Update the hidden userId input value
+                        document.querySelectorAll('#userSearchResults li').forEach(li => li.style.backgroundColor = 'transparent');
+                        this.style.backgroundColor = '#e9e9e9';
+
                         document.getElementById('userId').value = user.id;
-                        // Update the form's action to include the userId
                         const form = document.getElementById('inviteForm');
                         form.action = `/groups/${groupId}/invite/${user.id}`;
-                        // Clear the search results and set the search box value
-                        resultsContainer.innerHTML = '';
                         document.getElementById('userSearch').value = user.username;
                     });
+
                     resultsContainer.appendChild(li);
                 });
             })
             .catch(error => console.error('Error:', error));
     });
 </script>
-
 <script>
   const leave_group = () => {
     debugger;
