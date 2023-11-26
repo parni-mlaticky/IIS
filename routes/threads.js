@@ -311,7 +311,6 @@ router.delete(
   async (req, res) => {
     try {
       const comment = await commentModel.getById(req.params.id);
-      console.log("COMMENT", comment);
       if (comment.length != 1) {
         return res.status(404).render("404", {
           message: "Comment not found",
@@ -322,7 +321,6 @@ router.delete(
       
       const group = await groupModel.getGroupByCommentId(comment[0].id);
       const user_role = (await userGroupModel.getByUserIdAndGroupId(req.userData.id, group[0].id))[0].role;
-      console.log(user_role);
       const user_is_moderator_or_higher = user_role >= 1 || req.userData.is_admin; 
 
       if((comment[0].author_id != req.userData.id) && !user_is_moderator_or_higher) {
