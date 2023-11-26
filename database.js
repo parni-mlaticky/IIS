@@ -8,6 +8,7 @@ const pool = mysql.createPool({
   password: process.env.DB_PASS || "secret",
   database: process.env.DB_NAME || "iis",
   waitForConnections: true,
+  charset: "utf8_general_ci",
 });
 
 console.log(process.env.DB_HOST);

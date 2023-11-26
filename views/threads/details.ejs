@@ -53,6 +53,7 @@
             <div comment-id="<%= comments[i].comment_id %>">
             <p>
                 Score:
+                <p><%= comments[i].score %></p>
                 <% if (user) { %>
                     &emsp;
                     <button class="up_vote <%= (comments[i].user_score == 1) ? "selected_vote" : "unselected_vote" %>">Up vote</button>
@@ -65,7 +66,7 @@
             <% if(comments[i].author_id == user?.id) { %>
               <a class="button-edit" href="/threads/<%= comments[i].thread_id %>/comments/<%= comments[i].comment_id %>">edit</a>
             <% } %>
-            <% if(comments[i].author_id == user.id || moderator_or_higher) { %>
+            <% if(comments[i].author_id == user?.id || moderator_or_higher) { %>
               <form <%- `id="form_delete_comment_${comments[i].comment_id}"` %> style="display: none" action="/threads/<%= thread.parent_id %>/comments/<%= comments[i].comment_id %>/?_method=DELETE" method="post" if="form" enctype="x-www-form-urlencoded">
               </form>
                   <input class="button-delete" type="button" value="delete" <%= `onClick=delete_comment(${comments[i].comment_id})`%> >
