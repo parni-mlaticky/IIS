@@ -132,13 +132,26 @@
 <script>
     document.getElementById('userSearch').addEventListener('input', function(e) {
         const searchTerm = e.target.value;
-        const groupId = '<%= group.id %>'; // Get groupId from your EJS variable
+        const resultsContainer = document.getElementById('userSearchResults');
+        
+        if (searchTerm === "") {
+            resultsContainer.style.display = 'none';
+            return;
+        } else {
+            resultsContainer.style.display = 'block';
+        }
+
+        const groupId = '<%= group.id %>';
 
         fetch(`/users/search-non-members?query=${encodeURIComponent(searchTerm)}&groupId=${encodeURIComponent(groupId)}`)
             .then(response => response.json())
             .then(users => {
-                const resultsContainer = document.getElementById('userSearchResults');
                 resultsContainer.innerHTML = '';
+                if (users.length === 0) {
+                    resultsContainer.style.display = 'none';
+                    return;
+                }
+
                 resultsContainer.style.border = '1px solid #ddd';
                 resultsContainer.style.padding = '10px';
                 resultsContainer.style.maxHeight = '150px';
@@ -168,6 +181,7 @@
             .catch(error => console.error('Error:', error));
     });
 </script>
+
 <script>
   const leave_group = () => {
     debugger;
