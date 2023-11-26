@@ -86,3 +86,14 @@ form input[type="submit"]:hover {
 img {
   border-radius: 100%;
 }
+
+#userSearchResults {
+  list-style: none;
+}
+
+li {
+   text-align: left;
+  color: blue;
+  text-decoration: underline;
+  cursor: pointer;
+}
