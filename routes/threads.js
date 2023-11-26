@@ -75,7 +75,6 @@ router.post("/:groupid", authenticate, checkLogin, async (req, res) => {
       return res.redirect(`/groups/${req.params.groupid}?error_message=You are not a member of this group so you are not allowed to post a thread`);
     }
 
-    // TODO CHECK membership permissions
     const newComment = new commentModel(
       null,
       null,

@@ -3,3 +3,5 @@ node_modules
 public/*
 !public/css/
 !public/css/*.css
+!public/default_profile_pic.png
+!public/group_avatars/default_group_pic.png

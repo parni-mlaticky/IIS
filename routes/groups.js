@@ -51,7 +51,6 @@ router.get("/", async (req, res) => {
       groups = await groupModel.getRegisteredUserDisplayedGroups(req.userData.id);
     }
 
-    // TDOO show to members only if visibility is 1
     res.render("groups", { groups, user: req.userData, title: "Groups" });
   } catch (err) {
     console.log(err);
