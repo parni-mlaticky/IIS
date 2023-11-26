@@ -52,8 +52,10 @@
             <% } %>
             <div comment-id="<%= comments[i].comment_id %>">
             <p>
-                Score:
-                <p><%= comments[i].score %></p>
+            <p>
+              Score:
+              <%= comments[i].score %>
+            </p>
                 <% if (user) { %>
                     &emsp;
                     <button class="up_vote <%= (comments[i].user_score == 1) ? "selected_vote" : "unselected_vote" %>">Up vote</button>
@@ -63,7 +65,6 @@
 
             </div>
             <p><%= comments[i].content %></p>
-            <p><%= comments[i].score %></p>
             <% if(comments[i].author_id == user?.id) { %>
               <a class="button-edit" href="/threads/<%= comments[i].thread_id %>/comments/<%= comments[i].comment_id %>">edit</a>
             <% } %>
@@ -90,7 +91,7 @@
      document.querySelectorAll(".up_vote").forEach(
        async (button) => {
          button.addEventListener("click", async function() {
-           const comment_id = this.parentNode.parentNode.getAttribute("comment-id");
+           const comment_id = this.parentNode.getAttribute("comment-id");
            await vote(comment_id, 1);
          });
        }
@@ -99,7 +100,7 @@
      document.querySelectorAll(".down_vote").forEach(
        async (button) => {
          button.addEventListener("click", async function() {
-           const comment_id = this.parentNode.parentNode.getAttribute("comment-id");
+           const comment_id = this.parentNode.getAttribute("comment-id");
            vote(comment_id, -1);
          });
        }
